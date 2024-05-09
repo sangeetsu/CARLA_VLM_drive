@@ -1,0 +1,4 @@
+name: Virtuous_Environment
+channels:
+  - defaults
+prefix: /home/mommymythra/miniconda3/envs/Virtuous_Environment
