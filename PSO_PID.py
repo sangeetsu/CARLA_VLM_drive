@@ -929,7 +929,7 @@ if __name__ == "__main__":
         if args.New:
             # Grab initial values for the participant
             throttle_brake_gains, steering_gains, safety_buffer, speed_adhere = load_gains(args.ID)
-            initPop = np.random.rand(3,8)
+            initPop = np.random.rand(10,8)
             newC = initPop[:,-1] * 10
             rounded = np.round(newC)
             initPop[:,-1] = rounded 
@@ -937,7 +937,7 @@ if __name__ == "__main__":
                        steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, speed_adhere])
             constraints = (np.array([0,0,0,0,0,0,0,-15]),np.array([5,5,5,5,5,5,5,15]))
             options = {'c1': 2.05 ,'c2': 2.05 ,'w': 0.5} 
-            swarmSize = 3
+            swarmSize = 10
             Dimensions = 8
             optimizer = ps.single.GlobalBestPSO(n_particles=swarmSize,
                                     dimensions=Dimensions,
@@ -945,7 +945,7 @@ if __name__ == "__main__":
                                     bounds=constraints,
                                     init_pos=initPop
                                     )
-            fitness, solution = optimizer.optimize(CalcFit, iters=1)
+            fitness, solution = optimizer.optimize(CalcFit, iters=5)
             print(f"Parameters of the best solution : {solution}")
             print(f"Fitness value of the best solution = {fitness}")
             writepath = "participantPSO/"+args.ID+"PSOSAVE.txt"
@@ -962,7 +962,7 @@ if __name__ == "__main__":
             print(initPop)
             constraints = (np.array([0,0,0,0,0,0,0,-15]),np.array([5,5,5,5,5,5,5,15]))
             options = {'c1': 2.05 ,'c2': 2.05 ,'w': 0.5} 
-            swarmSize = 3
+            swarmSize = 10
             Dimensions = 8
             optimizer = ps.single.GlobalBestPSO(n_particles=swarmSize,
                                     dimensions=Dimensions,
@@ -970,7 +970,7 @@ if __name__ == "__main__":
                                     bounds=constraints,
                                     init_pos=initPop
                                     )
-            fitness, solution = optimizer.optimize(CalcFit, iters=1)
+            fitness, solution = optimizer.optimize(CalcFit, iters=10)
             print(f"Parameters of the best solution : {solution}")
             print(f"Fitness value of the best solution = {fitness}")
             writepath = "participantPSO/"+args.ID+"PSOSAVE.txt"

@@ -4,7 +4,8 @@
 # server``
 
 # Run first instance without an argument
-file_path="participant_data/AA1498final.csv"
+# Some test files AA1498final, TT4525final, LF6983final
+file_path="participant_data/LF6983final.csv"
 # Extract filename from the file path
 filename=$(basename "$file_path")
 # Retrieve ID
@@ -23,7 +24,7 @@ wait $PID3
 kill -9 $PID
 kill -9 $PID2
 sleep 3
-for n in {1..2};
+for n in {2..50};
 do
 	echo "Starting Iteration $n" 
 	# /home/path/to/CarlaUE4.sh -windowed > /dev/null 2>&1 &

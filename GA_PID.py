@@ -686,6 +686,14 @@ def get_transform(vehicle_location, angle, d=6.4):
         location = carla.Location(d * math.cos(a), d * math.sin(a), 2.0) + vehicle_location
         return carla.Transform(location, carla.Rotation(yaw=180 + angle, pitch=-15))
 
+def remove_numpy_arrays(obj):
+    if isinstance(obj, np.ndarray):
+        return remove_numpy_arrays(obj.tolist())
+    elif isinstance(obj, list):
+        return [remove_numpy_arrays(item) for item in obj]
+    else:
+        return obj
+
 # Loads in the gains and other optimization values from a JSON file that saves the final values
 # Param:
 #   participant_id - the unique participant ID
@@ -726,6 +734,8 @@ def update_pids_json(participant_id, solution, lastFit, lastSol,pareto_fronts):
     filename = 'JSONBASE/' + participant_id + '_GAgains.json'
     lastFit_list = lastFit.tolist() if isinstance(lastFit, np.ndarray) else lastFit
     lastSol_list = lastSol.tolist() if isinstance(lastSol, np.ndarray) else lastSol
+    pareto_fronts_fix = remove_numpy_arrays(pareto_fronts)
+    print(pareto_fronts_fix)
     # New gains structure from the solution
     new_gains = {
         'throttle_brake': {'kp': solution[0], 'ki': solution[1], 'kd': solution[2]},
@@ -734,7 +744,7 @@ def update_pids_json(participant_id, solution, lastFit, lastSol,pareto_fronts):
         'speed_adhere' : solution[7],
         'lastFit': lastFit_list,
         'lastSol': lastSol_list,
-        'pareto_front':pareto_fronts
+        'pareto_front':pareto_fronts_fix,
     }
     # Update the JSON file with new gains
     with open(filename, 'w') as f:
@@ -923,9 +933,9 @@ if __name__ == "__main__":
     try:
         if args.New:
             # Grab initial values for the participant
-            throttle_brake_gains, steering_gains, safety_buffer, speed_adhere = load_gains(participant_id)
-            numGener = 1 
-            numMat = 4
+            throttle_brake_gains, steering_gains, safety_buffer, speed_adhere = load_gains(args.ID)
+            numGener = 10
+            numMat = 7
             initPop = np.random.rand(10,8)
             newC = initPop[:,-1] * 10
             rounded = np.round(newC)
