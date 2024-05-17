@@ -130,6 +130,10 @@ class PIDLongitudinalController():
         self._k_d = K_D
         self._dt = dt
         self._error_buffer = deque(maxlen=10)
+        self._measure_buffer = deque(maxlen=10)
+        self._output_buffer = deque(maxlen=10)
+        self._integrator = True
+        self._derivative = True
 
     def run_step(self, target_speed, debug=False):
         """
@@ -158,19 +162,36 @@ class PIDLongitudinalController():
 
         error = target_speed - current_speed
         self._error_buffer.append(error)
+        self._measure_buffer.append(current_speed)
 
-        if len(self._error_buffer) >= 2:
+        if len(self._error_buffer) >= 2 and self._derivative == True:
             _de = (self._error_buffer[-1] - self._error_buffer[-2]) / self._dt
+            _me = (self._measure_buffer[-1] - self._measure_buffer[-2]) / self._dt
             if self._integrator is True:
                 _ie = sum(self._error_buffer) * self._dt
             else:
                 _ie = 0
         else:
+            _me = 0.0
             _de = 0.0
             _ie = 0.0
 
-        finalVal = (self._k_p * error) + (self._k_d * _de) + (self._k_i * _ie) 
+        finalVal = (self._k_p * error) - (self._k_d * _me) + (self._k_i * _ie) 
         clamping = np.clip(finalVal, -1.0, 1.0)
+        self._output_buffer.append(clamping)
+        print(self._output_buffer)
+        aFlag = False
+        if len(self._output_buffer) < 10:
+            self._derivative = True  # A deque with less than 2 elements trivially has alternating signs
+        else:
+            count = 0
+            for i in range(8):
+                if self._output_buffer[-i+1] * self._output_buffer[-i+3] >= 0:
+                    count = count + 1
+            if count == 8:
+                aFlag = True
+        if aFlag == False:
+            self._derivative = True
         block1 = False
         block2 = False
         if finalVal != clamping:

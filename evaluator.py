@@ -144,9 +144,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
                 adhere = 0
             elif target_velocity > 0 and adhere <= 0:
                 adhere = target_velocity
-            target_velocity = adhere 
-            print("BEHOLD A BREAK:", target_velocity)
-
+            target_velocity = adhere
             if optimizer == "GA":
                 target_heading = GA_PID.calculate_heading(closest_idx, track_data, waypoint.transform.location)
             else:
@@ -159,7 +157,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
                 target_throttle, pid_target_steer = GA_PID.get_target_values(throttle_brake_pid, steering_pid, current_velocity,target_velocity, current_heading, target_heading, world.get_settings().fixed_delta_seconds, waypoint, vehicle)
             else:
                 target_throttle, pid_target_steer = PSO_PID.get_target_values(throttle_brake_pid, steering_pid, current_velocity,target_velocity, current_heading, target_heading, world.get_settings().fixed_delta_seconds, waypoint, vehicle)
-            
+
             if target_throttle > 0:
                 target_brake = 0
             elif target_throttle < 0:
@@ -167,7 +165,6 @@ def run_carla_instance(PIDInput, optimizer, ID):
                 target_throttle = 0
             else:
                 target_brake = 0
-
             control = carla.VehicleControl(target_throttle, pid_target_steer, target_brake)
             vehicle.apply_control(control)
 
@@ -211,7 +208,7 @@ if __name__ == "__main__":
         if args.Optimizer == "GA":
             participant_path = 'JSONBASE/'+args.ID+'_GAgains.json'
         else:
-            participant_path = 'JSONBASE/'+args.ID+'PSOgains.json'
+            participant_path = 'JSONBASE/'+args.ID+'_PSOgains.json'
         main(participant_path, args.Optimizer, args.ID)
     except KeyboardInterrupt:
         print("Exiting simulation")

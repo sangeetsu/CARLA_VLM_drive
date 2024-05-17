@@ -5,7 +5,7 @@
 
 # Run first instance without an argument
 # Some test files AA1498final, TT4525final, LF6983final
-file_path="participant_data/LF6983final.csv"
+file_path="participant_data/DP8189final.csv"
 # Extract filename from the file path
 filename=$(basename "$file_path")
 # Retrieve ID
