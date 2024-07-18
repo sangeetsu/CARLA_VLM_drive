@@ -47,6 +47,9 @@ def waypoint_last_15_check(waypoint,waylist):
 # And calls the run_simulator function, which takes in 6 PID values and returns
 # a list of errors
 # These errors are input into findMeanError to get values used for calculating fitness
+# 6/18/24 - ADJUSTMENT**** 
+# Added: Regularization Sum of Least Squares of PID values and Buffer 
+# (Speed Adherance is left out due to high values that should exist)
 # Param:
 #   ga_instance - an instance of the genetic algorithm
 #   solution - 6 PID values, 1 safety buffer value, and 1 static speed_adherance value in a list
@@ -63,15 +66,24 @@ def fitness_func(ga_instance, solution, solution_idx):
         except Exception as e:
             print(f"Error occurred while destroying actor: {e}")
     actor_list.clear()
+    # This logic creates a regulatization of everything EXCEPT the velocity adherance
+    # Vel Adherance should be able to increase and decrease without constraint as some people
+    # SPEED and others don't
+    sumval = 0
+    for val in solution:
+        sumval += val**2
+    sumval = sumval - solution[7]**2
+    finalFit2 = -(.005 * sumval)
     trajE, velE = findMeanError(error)
-    finalFit = 1/trajE
-    finalFit2 = 1/velE
+    finalFit = -(trajE)
     return [finalFit,finalFit2]
 
 # This function acts as a total error calculation from the array that is passed in
 # sums all of trajectory reward and velocity reward, which is a pre-squared error value
 # from the simulation. The function with square every error value, since desired value will be 0
 # It then finishes the MSE calculation by dividing by the length of the array. 
+# 6/18/24 - ADJUSTMENT**** Removed velE as positional will force velocity into place, so no need to minimize
+# Left in vestigial Code until Verified results
 # Param:
 #   error - list of lists containing each timestep of trajectory or velocity reward (error)
 # Return:
@@ -112,6 +124,7 @@ def run_simulator(PIDInput):
     # new_settings.max_substeps=16
     new_settings.synchronous_mode = True
     new_settings.fixed_delta_seconds = .1
+    new_settings.no_rendering_mode = True
     world.apply_settings(new_settings) 
 
     spawn_actor(world)
@@ -205,8 +218,9 @@ def run_simulator(PIDInput):
             vehicle_location = vehicle_transform.location
 
             # Calculate the reward values (error)
+            # 6/18/24 NOTE - ADD VELOCITY REWARD TO TRAJECTORY REWARD INTO ONE MAYBE LATER, BUT FIRST TRY FULL POSITIONAL CHECK.
             velocity_reward, trajectory_reward = calculate_reward(current_x, current_y, current_throttle, current_brake, current_steering, current_velocity, track_data)
-            rewardsArr.append([velocity_reward,trajectory_reward])
+            rewardsArr.append([velocity_reward,(0.75)*trajectory_reward + (0.25)*velocity_reward])
 
             # Calculate target throttle and steer values
             # Throttle may be negative. If target throttle is < 0, then we are braking.

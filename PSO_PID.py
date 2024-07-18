@@ -116,6 +116,7 @@ def run_simulator(PIDInput):
     # new_settings.max_substeps=16
     new_settings.synchronous_mode = True
     new_settings.fixed_delta_seconds = .1
+    new_settings.no_rendering_mode =True
     world.apply_settings(new_settings) 
 
     spawn_actor(world)

@@ -4,17 +4,18 @@
 # server``
 
 # Run first instance without an argument
-file_path="participant_data/TT4525final.csv"
+file_path="participant_data/MV6666final.csv"
 # Extract filename from the file path
 filename=$(basename "$file_path")
 # Retrieve ID
 ID=${filename%final.csv}
 echo "Opening Program"
-/home/path/to/CarlaUE4.sh -windowed > /dev/null 2>&1 &
+#/home/path/to/CarlaUE4.sh -windowed > /dev/null 2>&1 &
+/home/mommymythra/Carla/sample33/LinuxNoEditor/CarlaUE4.sh -windowed > /dev/null 2>&1 &
 
 PID=$!
 let "PID2=$PID+8"
-sleep 3
+sleep 5
 echo "Initial Optimization Run"
 python3 GA_PID.py -i $ID --New &
 PID3=$!
@@ -25,10 +26,11 @@ sleep 3
 for n in {2..50};
 do
 	echo "Starting Iteration $n" 
-	/home/path/to/CarlaUE4.sh -windowed > /dev/null 2>&1 &
+	#/home/path/to/CarlaUE4.sh -windowed > /dev/null 2>&1 &
+	/home/mommymythra/Carla/sample33/LinuxNoEditor/CarlaUE4.sh -windowed > /dev/null 2>&1 &
 	PID=$!
 	let "PID2=$PID+8"
-	sleep 3
+	sleep 5
 	echo "Running Optimizer"
 	python3 GA_PID.py -i $ID &
 	PID3=$!

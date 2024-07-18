@@ -69,7 +69,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
     #new_settings.max_substep_delta_time = 0.02
     #new_settings.max_substeps=16
     new_settings.synchronous_mode = True
-    new_settings.fixed_delta_seconds = .05
+    new_settings.fixed_delta_seconds = .01
     world.apply_settings(new_settings) 
 
     if optimizer == "GA":
@@ -208,7 +208,7 @@ if __name__ == "__main__":
         if args.Optimizer == "GA":
             participant_path = 'JSONBASE/'+args.ID+'_GAgains.json'
         else:
-            participant_path = 'JSONBASE/'+args.ID+'_PSOgains.json'
+            participant_path = 'Participant_Verify/'+args.ID+'_PSOgains.json'
         main(participant_path, args.Optimizer, args.ID)
     except KeyboardInterrupt:
         print("Exiting simulation")

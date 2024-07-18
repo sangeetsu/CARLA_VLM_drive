@@ -188,10 +188,12 @@ class PIDLongitudinalController():
             for i in range(8):
                 if self._output_buffer[-i+1] * self._output_buffer[-i+3] >= 0:
                     count = count + 1
-            if count == 8:
+            if count >= 6:
                 aFlag = True
         if aFlag == False:
             self._derivative = True
+        else:
+            self._derivative = False
         block1 = False
         block2 = False
         if finalVal != clamping:
