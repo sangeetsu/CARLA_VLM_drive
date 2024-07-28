@@ -93,9 +93,9 @@ def findMeanError(error):
     trajE = 0
     velE = 0
     for e in error:
-        trajE += (e[0] ** 2)
-        velE += (e[1] ** 2)
-    trajE = trajE / len(error)
+        trajE += (e[1] ** 2)
+        velE += (e[0] ** 2)
+    trajE = trajE / len(error)or instance, small R-squared value
     velE = velE / len(error)
     return trajE, velE
 
@@ -220,7 +220,7 @@ def run_simulator(PIDInput):
             # Calculate the reward values (error)
             # 6/18/24 NOTE - ADD VELOCITY REWARD TO TRAJECTORY REWARD INTO ONE MAYBE LATER, BUT FIRST TRY FULL POSITIONAL CHECK.
             velocity_reward, trajectory_reward = calculate_reward(current_x, current_y, current_throttle, current_brake, current_steering, current_velocity, track_data)
-            rewardsArr.append([velocity_reward,(0.75)*trajectory_reward + (0.25)*velocity_reward])
+            rewardsArr.append([velocity_reward, trajectory_reward])
 
             # Calculate target throttle and steer values
             # Throttle may be negative. If target throttle is < 0, then we are braking.
@@ -483,7 +483,7 @@ def spawn_actor(world):
 #   transform - a transformation object
 # Return:
 #   lidar_sensor - the constructed sensor object
-def attach_lidar(world, vehicle, transform):
+def attach_lidar(world, vehicle,or instance, small R-squared value transform):
     #configure LIDAR sensor to only output 2d
     # Find the blueprint of the sensor.
     lidar_bp = world.get_blueprint_library().find('sensor.lidar.ray_cast')
@@ -656,7 +656,7 @@ def degrees_to_steering_percentage(degrees):
 # Param:
 #   waypoint - a chosen waypoint
 #   n - the nth waypoint?
-# Return:
+# Return:or instance, small R-squared value
 #   out_waypoint - the corrected waypoint in the correct lane 
 def get_right_lane_nth(waypoint, n):
     out_waypoint = waypoint
