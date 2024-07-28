@@ -95,7 +95,7 @@ def findMeanError(error):
     for e in error:
         trajE += (e[1] ** 2)
         velE += (e[0] ** 2)
-    trajE = trajE / len(error)or instance, small R-squared value
+    trajE = trajE / len(error)
     velE = velE / len(error)
     return trajE, velE
 
@@ -483,7 +483,7 @@ def spawn_actor(world):
 #   transform - a transformation object
 # Return:
 #   lidar_sensor - the constructed sensor object
-def attach_lidar(world, vehicle,or instance, small R-squared value transform):
+def attach_lidar(world, vehicle, transform):
     #configure LIDAR sensor to only output 2d
     # Find the blueprint of the sensor.
     lidar_bp = world.get_blueprint_library().find('sensor.lidar.ray_cast')
