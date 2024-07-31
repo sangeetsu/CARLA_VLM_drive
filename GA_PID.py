@@ -35,8 +35,8 @@ collFlag = False
 #   waylist - the full list of waypoints
 # Return:
 #   Boolean - If waypoint is in the last 15, True, else False
-def waypoint_last_15_check(waypoint,waylist):
-    wayselect = waylist[-15:]
+def waypoint_last_5_check(waypoint,waylist):
+    wayselect = waylist[-5:]
     for wp in wayselect:
         if waypoint is wp:
             return True
@@ -124,7 +124,7 @@ def run_simulator(PIDInput):
     # new_settings.max_substeps=16
     new_settings.synchronous_mode = True
     new_settings.fixed_delta_seconds = .1
-    new_settings.no_rendering_mode = True
+    #new_settings.no_rendering_mode = True
     world.apply_settings(new_settings) 
 
     spawn_actor(world)
@@ -141,6 +141,7 @@ def run_simulator(PIDInput):
     offset = rear_axle_center - vehicle.get_location()
     wheelbase = np.linalg.norm([offset.x, offset.y, offset.z])
     vehicle.set_simulate_physics(True)
+    vehicle.set_location(carla.Location(x=-90.1162,y=-0.9908,z=0.1545))
     throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds)
     steering_pid = myPID.PIDLateralController(vehicle,PIDInput[3], PIDInput[4], PIDInput[5],world.get_settings().fixed_delta_seconds)
     
@@ -173,7 +174,8 @@ def run_simulator(PIDInput):
             for count in range(ranger,7500,1):
                 rewardsArr.append([100,100])
             counter = 750 
-        elif waypoint_last_15_check(waypoint, my_custom_waypoints):
+        elif waypoint_last_5_check(waypoint, my_custom_waypoints):
+            print("Last 5?")
             ranger = int(counter * 10)
             for count in range(ranger,7500,1):
                 rewardsArr.append([0,0])
