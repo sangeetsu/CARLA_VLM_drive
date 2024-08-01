@@ -48,6 +48,8 @@ def load_pid_gains_from_json(json_file_path):
         speed = data['speed_adhere']
     return throttle_brake_pid, steering_pid, safety, speed
 
+
+
 # A copy of the running instance from the optimizer
 # Param:
 #   PIDInput - the set of 6 PID values + safety buffer + speed adherance values
@@ -104,7 +106,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
     throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds)
     steering_pid = myPID.PIDLateralController(vehicle,PIDInput[3], PIDInput[4], PIDInput[5],world.get_settings().fixed_delta_seconds)
 
-    participant_path = 'participant_data/'+ ID + 'final.csv'
+    participant_path = 'BestPID/'+ ID + 'final.csv'
     participant_filename = os.path.basename(participant_path)
     participant_id = os.path.splitext(participant_filename)[0]
     if optimizer == "GA":
@@ -123,7 +125,11 @@ def run_carla_instance(PIDInput, optimizer, ID):
     # Simulation loop
     
     time_step = 0
-    log_file_path = 'simulation_log.csv'
+    log_file_path = 'simulation_log_'+participant_id+'.csv'#'simulation_log.csv'
+
+    #Specify target position to end simulation
+    target_x = -40  # Change this to the desired target x position
+    target_y = 57  # Change this to the desired target y position
 
     while True:
         time_step += 1
@@ -176,6 +182,19 @@ def run_carla_instance(PIDInput, optimizer, ID):
                 target_heading = GA_PID.calculate_heading(closest_idx, track_data, waypoint.transform.location)
             else:
                 target_heading = PSO_PID.calculate_heading(closest_idx, track_data, waypoint.transform.location)
+            
+            # Check if the vehicle has crossed the target position
+            vehicle_transform = vehicle.get_transform()
+            current_position = vehicle_transform.location
+            
+            # Calculate the distance ignoring the z coordinate
+            distance = np.sqrt((current_position.x - target_x) ** 2 + (current_position.y - target_y) ** 2)
+            
+            # Check if vehicle has crossed the target position
+            if distance < 5.0:  # Adjust the threshold as needed
+                print(f"Vehicle has crossed the target position at {current_position}")
+                break
+
 
             # Control vehicle's throttle and steering
             vehicle_transform = vehicle.get_transform()
@@ -223,7 +242,7 @@ if __name__ == "__main__":
                 '-i', '--ID',
                 metavar='I',
                 type=ascii,
-                default="DP8189",
+                default="AM5287",
                 help='The participant ID from a file')
         argparser.add_argument(
                 '-o', '--Optimizer',
@@ -246,4 +265,3 @@ if __name__ == "__main__":
             actor.destroy()
         actor_list.clear()
         print("Simulation ended")
-

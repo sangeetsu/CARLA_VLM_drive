@@ -461,7 +461,9 @@ def waypoint_gen(world, amap):
 #   camera - the spawned camera 
 def spawn_actor(world):
     blueprint = world.get_blueprint_library().filter('vehicle.*model3*')[0]
-    my_spawn_point = carla.Transform(carla.Location(x=127.1, y=-2.1, z=2.1538), carla.Rotation(yaw=180))
+    my_spawn_point = carla.Transform(carla.Location(x=-90.1162,y=-0.9908,z=2.1545), carla.Rotation(yaw=180))
+    #x=-90.1162,y=-0.9908,z=0.1545 STOP SIGN SPAWN POINT
+    #x=127.1, y=-2.1, z=2.1538  OG SPAWN POINT
     vehicle = world.spawn_actor(blueprint, my_spawn_point)#carla.Transform(location, rotation))
     actor_list.append(vehicle)
     vehicle.set_simulate_physics(True)

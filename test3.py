@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -18,7 +19,11 @@ def calculate_velocity(df):
 
     return df['velocity_ms']
 
-def calculate_r_squared_nearest(simulation_csv_path, human_trajectory_csv_path):
+def smooth_velocity(velocity, window_size=50):
+    # Apply a moving average to smooth the velocity
+    return velocity.rolling(window=window_size, min_periods=1, center=True).mean()
+
+def calculate_r_squared_nearest(participant_id, simulation_csv_path, human_trajectory_csv_path, viz_dir):
     # Load simulation data
     sim_df = pd.read_csv(simulation_csv_path)
     
@@ -30,16 +35,16 @@ def calculate_r_squared_nearest(simulation_csv_path, human_trajectory_csv_path):
     
     # Ensure all values are numeric
     human_df = human_df.apply(pd.to_numeric, errors='coerce')
+
+    # Truncate all entries at the end of the trajectory where position is zero
+    human_df = human_df[(human_df[['x', 'y']] != 0).all(axis=1)]
     
     # Calculate velocity for human trajectory data
     human_df['velocity_ms'] = calculate_velocity(human_df)
-    
-    # Convert simulation velocity to m/s if needed (example conversion, modify based on your data's units)
-    # Assuming simulation velocities are in some unit that needs conversion
-    # Convert simulation velocity from km/h to m/s (if needed, modify as necessary)
-    # sim_df['VelX'] = sim_df['VelX'] * 1000 / 3600  # Example conversion if sim_df['VelX'] is in km/h
-    
-    # Use the absolute value of simulation velocities
+
+    # Smooth the human velocity values
+    human_df['velocity_ms'] = smooth_velocity(human_df['velocity_ms'])
+
     sim_velocities = np.sqrt(sim_df['VelX']**2 + sim_df['VelY']**2)  # Assuming VelX and VelY are already in m/s
     
     # Build a KD-tree for fast spatial lookup of nearest neighbors
@@ -57,40 +62,41 @@ def calculate_r_squared_nearest(simulation_csv_path, human_trajectory_csv_path):
     r2_position = r2_score(human_positions[indices], sim_positions)
     r2_velocity = r2_score(nearest_human_velocities, sim_velocities)  # Compare velocity magnitudes
     
-    # Debugging: Print some matched velocities from the middle of the simulation
-    middle_index = len(sim_positions) // 2
-    print("\nSample matched velocities (simulation -> human) at middle index:")
-    for i in range(middle_index-2, middle_index+3):
-        print(f"Sim Pos: {sim_positions[i]} Sim Vel: {sim_velocities.iloc[i]} -> Human Vel: {nearest_human_velocities[i]}")
+    # Print initial data points for comparison
+    print("Initial simulation data points:\n", sim_df.head())
+    print("Initial human data points:\n", human_df.head())
     
     # Visualization: Plot velocities
     plt.figure(figsize=(12, 6))
     
     plt.subplot(1, 2, 1)
-    plt.plot(range(len(sim_df)), sim_velocities, 'b-', label='Simulation VelX')
-    plt.plot(range(len(nearest_human_velocities)), nearest_human_velocities, 'r--', label='Human Vel')
+    plt.plot(range(len(sim_df)), sim_velocities, 'b-', label='Simulation Vel', linewidth=1)
+    plt.plot(range(len(nearest_human_velocities)), nearest_human_velocities, 'r--', label='Human Vel', linewidth=1)
     plt.xlabel('Index')
-    plt.ylabel('Velocity (m/s)')
+    plt.ylabel('Velocity (mph)')
     plt.title('Velocity Comparison')
     plt.legend()
     
     plt.subplot(1, 2, 2)
-    plt.plot(sim_df['PosX'], sim_df['PosY'], 'bo-', label='Simulation Position')
-    plt.plot(human_df['x'], human_df['y'], 'ro-', label='Human Position')
+    plt.plot(sim_df['PosX'], -sim_df['PosY'], 'b-', label='Simulation Position', markersize=3, linewidth=1, alpha=0.7)
+    plt.plot(human_df['x'], -human_df['y'], 'r--', label='Human Position', markersize=3, linewidth=1, alpha=0.7)
     plt.xlabel('PosX')
     plt.ylabel('PosY')
     plt.title('Position Comparison')
     plt.legend()
     
     plt.tight_layout()
+    plt.savefig(os.path.join(viz_dir, participant_id+'viz.png'))
     plt.show()
     
     return r2_position, r2_velocity
 
-# Example usage after the simulation loop
-simulation_csv_path = 'simulation_log_DP8189old.csv'
-human_trajectory_csv_path = '/home/sangeetsu/carla_packaged/Virtuous_Vehicle_Tuner/participant_data/DP8189final.csv'
+# Data files and their paths
+participant_id = 'AM5287'+'final'
+simulation_csv_path = 'simulation_log_'+participant_id+'.csv'
+human_trajectory_csv_path = '/home/sangeetsu/carla_packaged/Virtuous_Vehicle_Tuner/BestPID/'+participant_id+'.csv'
+viz_dir = '/home/sangeetsu/carla_packaged/Virtuous_Vehicle_Tuner/controller_comparison/'
 
-r2_pos, r2_vel = calculate_r_squared_nearest(simulation_csv_path, human_trajectory_csv_path)
+r2_pos, r2_vel = calculate_r_squared_nearest(participant_id, simulation_csv_path, human_trajectory_csv_path, viz_dir)
 print(f"R squared for position: {r2_pos}")
 print(f"R squared for velocity: {r2_vel}")
