@@ -5,6 +5,12 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import r2_score
 from scipy.spatial import cKDTree
 
+
+## SET YOUR PARTIPANT ID HERE
+participant_num = 'BJ7377'
+# participant_num = 'AR4924'
+# participant_num = 'AM5287'
+
 def calculate_velocity(df):
     # Calculate differences in time, x, and y
     df['dt'] = df['t'].diff()
@@ -40,7 +46,9 @@ def calculate_r_squared_nearest(participant_id, simulation_csv_path, human_traje
     # Truncate all entries at the end of the trajectory where position is zero
     human_df = human_df[(human_df[['x', 'y']] != 0).all(axis=1)]
 
- 
+    #truncate first row of human data
+    human_df = human_df.iloc[1:]
+    sim_df = sim_df.iloc[1:]
     
     # Calculate velocity for human trajectory data
     human_df['velocity_ms'] = calculate_velocity(human_df)
@@ -79,24 +87,36 @@ def calculate_r_squared_nearest(participant_id, simulation_csv_path, human_traje
     #     print(f"Sim Pos: {sim_positions[i]} Sim Vel: {sim_velocities.iloc[i]} -> Human Vel: {nearest_human_velocities[i]}")
     
     # Visualization: Plot velocities
-    plt.figure(figsize=(12, 6))
+    plt.figure(figsize=(18,6))
+    #figure title as participant id
+    plt.suptitle(participant_id)
     
+    #Add r2_position and r2_velocity below the figures as text
+    plt.figtext(0.1, 0.01, f"R^2 (velocity): {r2_velocity}", wrap=True, horizontalalignment='center', fontsize=12)
+    plt.figtext(0.9, 0.01, f"R^2 (position): {r2_position}", wrap=True, horizontalalignment='center', fontsize=12)
+   
+
+
     plt.subplot(1, 2, 1)
-    plt.plot(range(len(sim_df)), sim_velocities, 'b-', label='Simulation Vel', linewidth=1)
-    plt.plot(range(len(nearest_human_velocities)), nearest_human_velocities, 'r--', label='Human Vel', linewidth=1)
+    plt.plot(range(len(sim_df)), sim_velocities, 'b-', label='Simulation', linewidth=1)
+    plt.plot(range(len(nearest_human_velocities)), nearest_human_velocities, 'r--', label='Human', linewidth=1)
     plt.xlabel('Index')
     plt.ylabel('Velocity (mph)')
     plt.title('Velocity Comparison')
     plt.legend()
     
     plt.subplot(1, 2, 2)
-    plt.plot(sim_df['PosX'], -sim_df['PosY'], 'b-', label='Simulation Position', markersize=3, linewidth=1, alpha=0.7)
-    plt.plot(human_df['x'], -human_df['y'], 'r--', label='Human Position', markersize=3, linewidth=1, alpha=0.7)
+    plt.plot(sim_df['PosX'], -sim_df['PosY'], 'b-', markersize=3, linewidth=1, alpha=0.7)
+    plt.plot(human_df['x'], -human_df['y'], 'r--', markersize=3, linewidth=1, alpha=0.7)
     plt.xlabel('PosX')
     plt.ylabel('PosY')
     plt.title('Position Comparison')
     plt.legend()
     
+    # Maintain 2:1 aspect ratio for the two subplots
+    plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1, wspace=0.3, hspace=0.3)
+    plt.gca().set_aspect('auto', adjustable='box')
+
     plt.tight_layout()
     plt.savefig(os.path.join(viz_dir, participant_id+'viz.png'))
     # plt.show()
@@ -104,11 +124,12 @@ def calculate_r_squared_nearest(participant_id, simulation_csv_path, human_traje
     return r2_position, r2_velocity
 
 #Data files and their paths
-participant_id = 'AM5287'+'final'
+participant_id = participant_num+'final'
 simulation_csv_path = 'simulation_log_'+participant_id+'.csv'
 human_trajectory_csv_path = '/home/sangeetsu/carla_packaged/Virtuous_Vehicle_Tuner/BestPID/'+participant_id+'.csv'
 viz_dir = '/home/sangeetsu/carla_packaged/Virtuous_Vehicle_Tuner/controller_comparison/'
 
 r2_pos, r2_vel = calculate_r_squared_nearest(participant_id, simulation_csv_path, human_trajectory_csv_path, viz_dir)
+print(f"Participant ID: {participant_id}")
 print(f"R squared for position: {r2_pos}")
 print(f"R squared for velocity: {r2_vel}")
