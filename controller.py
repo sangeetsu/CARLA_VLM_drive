@@ -114,7 +114,8 @@ class PIDLongitudinalController():
     PIDLongitudinalController implements longitudinal control using a PID.
     """
 
-    def __init__(self, vehicle, K_P=1.0, K_I=0.0, K_D=0.0, dt=0.03):
+    # 08/04 edit = add max_throttle and max_brake for STICKY playtest. 
+    def __init__(self, vehicle, K_P=1.0, K_I=0.0, K_D=0.0, dt=0.03, max_Throttle=1.0, max_Brake=1.0):
         """
         Constructor method.
 
@@ -134,6 +135,8 @@ class PIDLongitudinalController():
         self._output_buffer = deque(maxlen=10)
         self._integrator = True
         self._derivative = True
+        self._max_throttle = max_Throttle
+        self._max_brake = max_Brake
 
     def run_step(self, target_speed, debug=False):
         """
@@ -177,7 +180,21 @@ class PIDLongitudinalController():
             _ie = 0.0
 
         finalVal = (self._k_p * error) - (self._k_d * _me) + (self._k_i * _ie) 
-        clamping = np.clip(finalVal, -1.0, 1.0)
+        print("FINAL VAL:", finalVal)
+        clamping = np.clip(finalVal, -self._max_brake, self._max_throttle)
+        # RIGHT HERE. THIS IS IT. WE can implement a MAXIMUM. ALLOWED. THROTTLE CHANGE. So if the last value is 0
+        # and the current clamped value is MAX... then reduce that BIATCH.
+        Max_Throttle_Change = 0.25
+        if len(self._output_buffer) >= 1:
+            print("ABSOLUTE: ", abs(self._output_buffer[-1]-clamping))
+            if abs(self._output_buffer[-1]-clamping) > Max_Throttle_Change:
+                if clamping < 0:
+                    clamping = self._output_buffer[-1] - Max_Throttle_Change
+                else:
+                    clamping = self._output_buffer[-1] + Max_Throttle_Change
+        else:
+            clamping = Max_Throttle_Change
+        clamping = np.clip(clamping, -self._max_brake, self._max_throttle)
         self._output_buffer.append(clamping)
         print(self._output_buffer)
         aFlag = False

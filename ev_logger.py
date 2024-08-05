@@ -103,9 +103,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
     offset = rear_axle_center - vehicle.get_location()
     wheelbase = np.linalg.norm([offset.x, offset.y, offset.z])
     vehicle.set_simulate_physics(True)
-    throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds)
-    steering_pid = myPID.PIDLateralController(vehicle,PIDInput[3], PIDInput[4], PIDInput[5],world.get_settings().fixed_delta_seconds)
-
+    # BEGIN THE TESTER AREA #########################################
     participant_path = 'BestPID/'+ ID + 'final.csv'
     participant_filename = os.path.basename(participant_path)
     participant_id = os.path.splitext(participant_filename)[0]
@@ -118,7 +116,17 @@ def run_carla_instance(PIDInput, optimizer, ID):
         base_traj_data = GA_PID.base_traj_loader(base_traj_path)
     else:
         base_traj_data = PSO_PID.base_traj_loader(base_traj_path)
-    
+
+    # UPDATE 3:10 AM: just using max doesn't help because it may pick up the extra bullshit in the front where poeple are just smacking the throttle for no reason. 
+    change_index = track_data['x'].iloc[1:].ne(track_data['x'].shift().iloc[1:]).idxmax() 
+    track_filter = track_data.iloc[change_index:]
+    max_T = track_filter["throttle"].max()
+    max_B = track_filter["brake"].max()
+    print("MAX THROTTLE: ", max_T)
+    print("MAX BRAKE: ", max_B)
+    throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds, max_T, max_B)
+    steering_pid = myPID.PIDLateralController(vehicle,PIDInput[3], PIDInput[4], PIDInput[5],world.get_settings().fixed_delta_seconds)
+
     #start recording
     client.start_recorder(participant_id + '.log', True)
     velAdh = PIDInput[7]
@@ -178,6 +186,21 @@ def run_carla_instance(PIDInput, optimizer, ID):
             elif target_velocity > 0 and adhere <= 0:
                 adhere = target_velocity
             target_velocity = adhere
+            # This is a GREAT place to filter! 
+            # We have current velocity and target velocity. 
+            # We set a generic constant for "maximum velocity change" This may be dynamic later
+            # After that, we compute the difference between current and target and check if it exceeds the maxim
+            # If it exceeds maximum, compute new target using maxim, otherwise use current target
+            # For now, this number is 3 as a toy example.
+            #maxim_vel_change = 5
+            #diffvel = current_velocity - target_velocity
+            print("Current Vel: ", current_velocity)
+            print("Current Target: ", target_velocity)
+            #print("Difference: ", diffvel)
+            #if abs(diffvel) > maxim_vel_change:
+            #    target_velocity = current_velocity + maxim_vel_change
+            # END TESTING ZONE
+            #print("Final Target: ", target_velocity)
             if optimizer == "GA":
                 target_heading = GA_PID.calculate_heading(closest_idx, track_data, waypoint.transform.location)
             else:

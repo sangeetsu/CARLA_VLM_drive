@@ -88,8 +88,8 @@ def calculate_r_squared_nearest(simulation_csv_path, human_trajectory_csv_path):
     return r2_position, r2_velocity
 
 # Example usage after the simulation loop
-simulation_csv_path = 'simulation_log_MV6666.csv'
-human_trajectory_csv_path = '/home/sangeetsu/carla_packaged/Virtuous_Vehicle_Tuner/participant_data/MV6666final.csv'
+simulation_csv_path = 'simulation_log.csv'
+human_trajectory_csv_path = '/home/mommymythra/Carla/tuner/Virtuous_Vehicle_Tuner/participant_data/MV6666final.csv'
 
 r2_pos, r2_vel = calculate_r_squared_nearest(simulation_csv_path, human_trajectory_csv_path)
 print(f"R squared for position: {r2_pos}")

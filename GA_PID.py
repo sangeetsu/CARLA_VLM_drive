@@ -142,7 +142,13 @@ def run_simulator(PIDInput):
     wheelbase = np.linalg.norm([offset.x, offset.y, offset.z])
     vehicle.set_simulate_physics(True)
     vehicle.set_location(carla.Location(x=-90.1162,y=-0.9908,z=0.1545))
-    throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds)
+    change_index = track_data['x'].iloc[1:].ne(track_data['x'].shift().iloc[1:]).idxmax() 
+    track_filter = track_data.iloc[change_index:]
+    max_T = track_filter["throttle"].max()
+    max_B = track_filter["brake"].max()
+    print("MAX THROTTLE: ", max_T)
+    print("MAX BRAKE: ", max_B)
+    throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds, max_T, max_B)
     steering_pid = myPID.PIDLateralController(vehicle,PIDInput[3], PIDInput[4], PIDInput[5],world.get_settings().fixed_delta_seconds)
     
     # This allows for pure pursuit weighting should the PID controller be insufficient. 

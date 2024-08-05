@@ -7,9 +7,9 @@ from scipy.spatial import cKDTree
 
 
 ## SET YOUR PARTIPANT ID HERE
-participant_num = 'BJ7377'
+# participant_num = 'BJ7377'
 # participant_num = 'AR4924'
-# participant_num = 'AM5287'
+participant_num = 'AM5287'
 
 def calculate_velocity(df):
     # Calculate differences in time, x, and y
@@ -126,8 +126,8 @@ def calculate_r_squared_nearest(participant_id, simulation_csv_path, human_traje
 #Data files and their paths
 participant_id = participant_num+'final'
 simulation_csv_path = 'simulation_log_'+participant_id+'.csv'
-human_trajectory_csv_path = '/home/sangeetsu/carla_packaged/Virtuous_Vehicle_Tuner/BestPID/'+participant_id+'.csv'
-viz_dir = '/home/sangeetsu/carla_packaged/Virtuous_Vehicle_Tuner/controller_comparison/'
+human_trajectory_csv_path = '/home/mommymythra/Carla/tuner/Virtuous_Vehicle_Tuner/BestPID/'+participant_id+'.csv'
+viz_dir = '/home/mommymythra/Carla/tuner/Virtuous_Vehicle_Tuner/controller_comparison/'
 
 r2_pos, r2_vel = calculate_r_squared_nearest(participant_id, simulation_csv_path, human_trajectory_csv_path, viz_dir)
 print(f"Participant ID: {participant_id}")
