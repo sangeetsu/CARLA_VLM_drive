@@ -124,12 +124,13 @@ def run_carla_instance(PIDInput, optimizer, ID):
     max_B = track_filter["brake"].max()
     print("MAX THROTTLE: ", max_T)
     print("MAX BRAKE: ", max_B)
-    throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds, max_T, max_B)
+    throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds)
     steering_pid = myPID.PIDLateralController(vehicle,PIDInput[3], PIDInput[4], PIDInput[5],world.get_settings().fixed_delta_seconds)
 
     #start recording
     client.start_recorder(participant_id + '.log', True)
     velAdh = PIDInput[7]
+    #velAdh = 0
     # Simulation loop
     
     time_step = 0
@@ -138,7 +139,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
     #Specify target position to end simulation
     target_x = -40  # Change this to the desired target x position
     target_y = 57  # Change this to the desired target y position
-
+    old_target = 0
     while True:
         time_step += 1
         # Update camera view
@@ -180,12 +181,21 @@ def run_carla_instance(PIDInput, optimizer, ID):
             closest_idx = np.argmin(np.sum((base_traj_data[['x', 'y']].values - np.array([waypoint_location.x, waypoint_location.y]))**2, axis=1))
             closest_data = base_traj_data.iloc[closest_idx]
             target_velocity = closest_data['speed_limit']
+            print("Scheduled Velocity: ", target_velocity)
             adhere = target_velocity + velAdh
             if target_velocity <= 0:
                 adhere = 0
             elif target_velocity > 0 and adhere <= 0:
                 adhere = target_velocity
             target_velocity = adhere
+            #a = 0.9
+            #target_velocity = a*current_velocity+(1-a)*target_velocity
+            limit = .008
+            if(target_velocity >= old_target):
+                if (target_velocity - old_target) > limit:
+                    target_velocity = old_target + limit
+            old_target = target_velocity
+            print("Old Target Value: ", old_target)
             # This is a GREAT place to filter! 
             # We have current velocity and target velocity. 
             # We set a generic constant for "maximum velocity change" This may be dynamic later
