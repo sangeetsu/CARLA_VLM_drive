@@ -112,7 +112,7 @@ def calculate_r_squared_nearest(participant_id, simulation_csv_path, human_traje
     # Find indices within the school zone
     school_zone_indices = sim_df.apply(lambda row: is_within_school_zone(row['PosX'], row['PosY'], school_zone_start, school_zone_end), axis=1)
     # print indices where school zone is true
-    # print(school_zone_indices[school_zone_indices == True].index)
+    print(school_zone_indices[school_zone_indices == True].index)
    
 
     #convert velocities from m/s to mph before plotting
