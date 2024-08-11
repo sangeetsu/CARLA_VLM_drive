@@ -148,7 +148,7 @@ def run_simulator(PIDInput):
     max_B = track_filter["brake"].max()
     print("MAX THROTTLE: ", max_T)
     print("MAX BRAKE: ", max_B)
-    throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds, max_T, max_B)
+    throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds)
     steering_pid = myPID.PIDLateralController(vehicle,PIDInput[3], PIDInput[4], PIDInput[5],world.get_settings().fixed_delta_seconds)
     
     # This allows for pure pursuit weighting should the PID controller be insufficient. 
@@ -218,7 +218,13 @@ def run_simulator(PIDInput):
                 adhere = 0
             elif target_velocity > 0 and adhere <= 0:
                 adhere = target_velocity
-            target_velocity = adhere 
+            target_velocity = adhere
+            # Place Tweaks 08/10/24
+            limit = .008
+            if(target_velocity >= old_target):
+                if (target_velocity - old_target) > limit:
+                    target_velocity = old_target + limit
+            old_target = target_velocity
             target_heading = calculate_heading(closest_idx, track_data, waypoint.transform.location)
             # Control vehicle's throttle and steering
             
