@@ -30,13 +30,14 @@ lock = threading.Lock()
 collFlag = False
 
 # Function is just a waypoint check because if my waypoint is at the end, I want to do a low error: they made it
+# 08/11/24: quick update: made it last 21 in order to match ev_logger file, but did NOT change function name
 # Param:
 #   waypoint - a pre-selected waypoint from the carla map waypoint list
 #   waylist - the full list of waypoints
 # Return:
 #   Boolean - If waypoint is in the last 15, True, else False
 def waypoint_last_5_check(waypoint,waylist):
-    wayselect = waylist[-5:]
+    wayselect = waylist[-21:]
     for wp in wayselect:
         if waypoint is wp:
             return True
@@ -159,6 +160,8 @@ def run_simulator(PIDInput):
     snap = world.get_snapshot()
     # Grab the velocity adherance value
     velAdh = PIDInput[7]
+    # Set old_target for future calc. Init at 0. 
+    old_target = 0
     # initial waypoint grab. Functionally just initializes a variable.  
     waypoint = get_next_waypoint(world, vehicle, my_custom_waypoints, PIDInput[6])
     while counter < 480:
