@@ -106,8 +106,8 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
         plt.text(-0.5 * (zone['x1'] + zone['x2']), 0.5 * (zone['y1'] + zone['y2']), f"Zone {zone['zone']}",
                 fontsize=10, color=color, verticalalignment='center', horizontalalignment='center')
 
-    plt.xlabel('PosX')
-    plt.ylabel('PosY')
+    plt.xlabel('X (m)')
+    plt.ylabel('Y (m)')
     plt.title('Position Comparison')
     plt.legend()
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1, wspace=0.3, hspace=0.3)
