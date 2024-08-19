@@ -167,13 +167,14 @@ class PIDLongitudinalController():
         self._error_buffer.append(error)
         self._measure_buffer.append(current_speed)
 
-        if len(self._error_buffer) >= 2 and self._derivative == True:
+        #if len(self._error_buffer) >= 2 and self._derivative == True:
+        if len(self._error_buffer) >= 2:    
             _de = (self._error_buffer[-1] - self._error_buffer[-2]) / self._dt
             _me = (self._measure_buffer[-1] - self._measure_buffer[-2]) / self._dt
-            if self._integrator is True:
-                _ie = sum(self._error_buffer) * self._dt
-            else:
-                _ie = 0
+            #if self._integrator is True:
+            _ie = sum(self._error_buffer) * self._dt
+            #else:
+            #    _ie = 0
         else:
             _me = 0.0
             _de = 0.0
@@ -184,6 +185,7 @@ class PIDLongitudinalController():
         clamping = np.clip(finalVal, -self._max_brake, self._max_throttle)
         # RIGHT HERE. THIS IS IT. WE can implement a MAXIMUM. ALLOWED. THROTTLE CHANGE. So if the last value is 0
         # and the current clamped value is MAX... then reduce that BIATCH.
+        """
         Max_Throttle_Change = 0.25
         if len(self._output_buffer) >= 1:
             print("ABSOLUTE: ", abs(self._output_buffer[-1]-clamping))
@@ -195,8 +197,10 @@ class PIDLongitudinalController():
         else:
             clamping = Max_Throttle_Change
         clamping = np.clip(clamping, -self._max_brake, self._max_throttle)
+        """
         self._output_buffer.append(clamping)
         print(self._output_buffer)
+        """
         aFlag = False
         if len(self._output_buffer) < 10:
             self._derivative = True  # A deque with less than 2 elements trivially has alternating signs
@@ -221,6 +225,7 @@ class PIDLongitudinalController():
             self._integrator = False
         else:
             self._integrator = True
+        """
         return clamping
 
 
@@ -313,15 +318,16 @@ class PIDLateralController():
         self._e_buffer.append(_dot)
         if len(self._e_buffer) >= 2:
             _de = (self._e_buffer[-1] - self._e_buffer[-2]) / self._dt
-            if self._integrator is True:
-                _ie = sum(self._e_buffer) * self._dt
-            else:
-                _ie = 0
+            #if self._integrator is True:
+            _ie = sum(self._e_buffer) * self._dt
+            #else:
+            #    _ie = 0
         else:
             _de = 0.0
             _ie = 0.0
         finalVal = (self._k_p * _dot) + (self._k_d * _de) + (self._k_i * _ie) 
         clamping = np.clip(finalVal, -1.0, 1.0)
+        """
         block1 = False
         block2 = False
         if finalVal != clamping:
@@ -332,6 +338,7 @@ class PIDLateralController():
             self._integrator = False
         else:
             self._integrator = True
+        """
         return clamping
 
     def change_parameters(self, K_P, K_I, K_D, dt):
