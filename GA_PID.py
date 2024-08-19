@@ -99,6 +99,46 @@ def findMeanError(error):
     velE = velE / len(error)
     return trajE, velE
 
+# Limiter Function. Acts to calculate the limiter and save it
+# Param:
+#   track - dataframe of participant track data
+#   zones - zone dataframe
+# Return:
+#   limiters - a set of 8 limiters for each of the zones 
+#def calculateLimiters(track, zones):
+#    limiters = []
+#    # First, we need to iterate over zones
+#    for i in range(0,8):
+#        print(zones.iloc[i])
+#        xBound = (min(zones.iloc[i]['x1'],zones.iloc[i]['x2']), max(zones.iloc[i]['x1'],zones.iloc[i]['x2']))
+#        yBound = (min(zones.iloc[i]['y1'],zones.iloc[i]['y2']), max(zones.iloc[i]['y1'],zones.iloc[i]['y2']))
+#        print(xBound, yBound)
+#        filtered = track[(track['x'] > xBound[0]) & (track['x'] <= xBound[1]) & (track['y'] > yBound[0]) & (track['y'] <= yBound[1])]
+#        #Find closest index to the start of the zone
+#        startIn = np.argmin(np.sum((filtered[['x', 'y']].values - np.array([zones.iloc[i]['x1'], zones.iloc[i]['y1']]))**2, axis=1))
+#        origIn = filtered.index[startIn]
+#        #Gather original indexes based on filtered. 
+#        filtered_index = filtered.index
+#        original = track.index[track.index.isin(filtered_index)]
+#        # Get velocity data
+#        max_velocity = track.loc[original, 'velocity_ms'].max()
+#        max_velocity_index = track.loc[original, 'velocity_ms'].idxmax()
+#        # filtered_index and max_velocity_index are i1 and i2 for santiy
+#        # Get time
+#        time = track.iloc[max_velocity_index]['t'] - track.iloc[origIn]['t']
+#        # Get distance
+#        distance = 0
+#        for i in range(origIn,max_velocity_index):
+#            distance += np.sqrt(np.sum(track.iloc[i+1][['x','y']].values - track.iloc[i][['x','y']].values)**2)
+#        #Now we need delta vel
+#        #deltaV = track.iloc[max_velocity_index]['velocity_ms'] - track.iloc[origIn]['velocity_ms']
+#        acc = ((2*distance)/(time**2))/100
+#        if acc > 1:
+#            acc = 1
+#        limiters.append(acc)
+#    return limiters
+
+
 # This function runs the simulator for the fitness function
 # Param:
 #   PIDInput: list of 6 PID values in ORDER of KPt, KIt, KDt, KPv, KIs,KDs
@@ -141,9 +181,9 @@ def run_simulator(PIDInput):
     offset = rear_axle_center - vehicle.get_location()
     wheelbase = np.linalg.norm([offset.x, offset.y, offset.z])
     vehicle.set_simulate_physics(True)
-    vehicle.set_location(carla.Location(x=-90.1162,y=-0.9908,z=0.1545))
-    change_index = track_data['x'].iloc[1:].ne(track_data['x'].shift().iloc[1:]).idxmax() 
-    track_filter = track_data.iloc[change_index:]
+    #vehicle.set_location(carla.Location(x=-90.1162,y=-0.9908,z=0.1545))
+    #change_index = track_data['x'].iloc[1:].ne(track_data['x'].shift().iloc[1:]).idxmax() 
+    #track_filter = track_data.iloc[change_index:]
     #max_T = track_filter["throttle"].max()
     #max_B = track_filter["brake"].max()
     #print("MAX THROTTLE: ", max_T)
@@ -156,9 +196,14 @@ def run_simulator(PIDInput):
     pp_weight = 0
     pid_weight = 1 - pp_weight
 
+    # Implementing Flag Zones for the space
+    VelZones = [PIDInput[7],PIDInput[8],PIDInput[9],PIDInput[10],PIDInput[11],PIDInput[12],PIDInput[13],PIDInput[14]]
+    CurrentZone = -1
+    zones = pd.read_csv('zone_list.csv')
+    #limiters = calculateLimiters(track_data,zones)
+
+
     snap = world.get_snapshot()
-    # Grab the velocity adherance value
-    velAdh = PIDInput[7]
     # Set old_target for future calc. Init at 0. 
     old_target = 0
     # initial waypoint grab. Functionally just initializes a variable.  
@@ -180,7 +225,7 @@ def run_simulator(PIDInput):
             print("faulty_waypoint")
             ranger = int(counter * 10)
             for count in range(ranger,7500,1):
-                rewardsArr.append([100,100])
+                rewardsArr.append([10000,10000])
             counter = 750 
         elif waypoint_last_5_check(waypoint, my_custom_waypoints):
             print("Last 5?")
@@ -205,6 +250,23 @@ def run_simulator(PIDInput):
             current_velocity = np.sqrt(current_velocity_3D.x**2 + current_velocity_3D.y**2 + current_velocity_3D.z**2)
             current_heading = rotation.yaw
 
+
+            #Before checking waypoints, check if vehicle in in a zone.
+            # If Vehicle between the coordinates of a zone, then set all zones to False and set current zone to True
+            for x in range(0,8):
+                xBound = (min(zones.iloc[x]['x1'],zones.iloc[x]['x2']), max(zones.iloc[x]['x1'],zones.iloc[x]['x2']))
+                yBound = (min(zones.iloc[x]['y1'],zones.iloc[x]['y2']), max(zones.iloc[x]['y1'],zones.iloc[x]['y2']))
+                if current_x > xBound[0] and current_x <= xBound[1]:
+                    if current_y > yBound[0] and current_y <= yBound[1]:
+                        CurrentZone = x
+                        break
+                    else:
+                        CurrentZone = -1
+                else:
+                    CurrentZone = -1
+
+            
+
             # Target velocity calculation
             # Completed by grabbing the reference data and finding the closest X,Y position on the map as the 
             # waypoint and comparing the reference speed limit to current speed.
@@ -215,13 +277,17 @@ def run_simulator(PIDInput):
             # add velAdh to the velocity target data in order to change how much a driver adheres to the speed limit
             target_velocity = closest_data['speed_limit']
             # This will set the target to be a non-zero value as long as the speed limit or expectation isn't 0
-            adhere = target_velocity + velAdh
+            adhere = 0
+            if CurrentZone > -1:
+                adhere = VelZones[CurrentZone]
+            adhere = target_velocity + adhere
             if target_velocity <= 0:
                 adhere = 0
             elif target_velocity > 0 and adhere <= 0:
                 adhere = target_velocity
             target_velocity = adhere
             # Place Tweaks 08/10/24
+            #limit = limiters[CurrentZone]
             limit = .008
             if(target_velocity >= old_target):
                 if (target_velocity - old_target) > limit:
@@ -235,8 +301,9 @@ def run_simulator(PIDInput):
 
             # Calculate the reward values (error)
             # 6/18/24 NOTE - ADD VELOCITY REWARD TO TRAJECTORY REWARD INTO ONE MAYBE LATER, BUT FIRST TRY FULL POSITIONAL CHECK.
-            velocity_reward, trajectory_reward = calculate_reward(current_x, current_y, current_throttle, current_brake, current_steering, current_velocity, track_data)
-            rewardsArr.append([velocity_reward, trajectory_reward])
+            if CurrentZone > -1:
+                velocity_reward, trajectory_reward = calculate_reward(current_x, current_y, current_throttle, current_brake, current_steering, current_velocity, track_data)
+                rewardsArr.append([velocity_reward, trajectory_reward])
 
             # Calculate target throttle and steer values
             # Throttle may be negative. If target throttle is < 0, then we are braking.
@@ -475,7 +542,7 @@ def waypoint_gen(world, amap):
 #   camera - the spawned camera 
 def spawn_actor(world):
     blueprint = world.get_blueprint_library().filter('vehicle.*model3*')[0]
-    my_spawn_point = carla.Transform(carla.Location(x=-90.1162,y=-0.9908,z=2.1545), carla.Rotation(yaw=180))
+    my_spawn_point = carla.Transform(carla.Location(x=127.1,y=-2.1,z=2.1538), carla.Rotation(yaw=180))
     #x=-90.1162,y=-0.9908,z=0.1545 STOP SIGN SPAWN POINT
     #x=127.1, y=-2.1, z=2.1538  OG SPAWN POINT
     vehicle = world.spawn_actor(blueprint, my_spawn_point)#carla.Transform(location, rotation))
@@ -975,7 +1042,7 @@ if __name__ == "__main__":
                 rounded = np.round(newC)
                 initPop[:,x] = rounded 
             initPop[0] = np.array([throttle_brake_gains.kp, throttle_brake_gains.ki, throttle_brake_gains.kd,
-                       steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, sp_st[0], sp_st[1], sp_st[2], sp_st[3], sp_st[4], sp_st[5], sp_st[6], sp_st[7]])
+                       steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, sp_st['s1'], sp_st['s2'], sp_st['s3'], sp_st['s4'], sp_st['s5'], sp_st['s6'], sp_st['s7'], sp_st['s8']])
             geneSpace = [{'low': 0, 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low': 0, 'high': 5},{'low': 0, 'high': 5},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},]
             parenSel = "nsga2"
             ga_instance = pg.GA(num_generations = numGener,

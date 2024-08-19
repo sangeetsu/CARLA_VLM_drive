@@ -129,10 +129,15 @@ def run_carla_instance(PIDInput, optimizer, ID):
 
     #start recording
     client.start_recorder(participant_id + '.log', True)
-    velAdh = PIDInput[7]
-    #velAdh = 0
-    # Simulation loop
+
+
+    # Implementing Flag Zones for the space
+    VelZones = [PIDInput[7],PIDInput[8],PIDInput[9],PIDInput[10],PIDInput[11],PIDInput[12],PIDInput[13],PIDInput[14]]
+    CurrentZone = -1
+    zones = pd.read_csv('zone_list.csv')
+
     
+    # Simulation loop
     time_step = 0
     log_file_path = 'simulation_log_'+participant_id+'.csv'#'simulation_log.csv'
 
@@ -176,13 +181,31 @@ def run_carla_instance(PIDInput, optimizer, ID):
             current_velocity_3D = vehicle.get_velocity()
             current_velocity = np.sqrt(current_velocity_3D.x**2 + current_velocity_3D.y**2 + current_velocity_3D.z**2)
             current_heading = rotation.yaw
+            
+            #Before checking waypoints, check if vehicle in in a zone.
+            # If Vehicle between the coordinates of a zone, then set all zones to False and set current zone to True
+            for x in range(0,8):
+                xBound = (min(zones[x]['x1'],zones[x]['x2']), max(zones[x]['x1'],zones[x]['x2']))
+                yBound = (min(zones[x]['y1'],zones[x]['y2']), max(zones[x]['y1'],zones[x]['y2']))
+                if current_x > xBound[0] and current_x <= xBound[1]:
+                    if current_y > yBound[0] and current_y <= yBound[1]:
+                        CurrentZone = x
+                        break
+                    else:
+                        CurrentZone = -1
+                else: 
+                    CurrentZone = -1
+
 
             waypoint_location = waypoint.transform.location
             closest_idx = np.argmin(np.sum((base_traj_data[['x', 'y']].values - np.array([waypoint_location.x, waypoint_location.y]))**2, axis=1))
             closest_data = base_traj_data.iloc[closest_idx]
             target_velocity = closest_data['speed_limit']
             print("Scheduled Velocity: ", target_velocity)
-            adhere = target_velocity + velAdh
+            adhere = 0
+            if CurrentZone > -1:
+                adhere = VelZones[CurrentZone]
+            adhere = target_velocity + adhere
             if target_velocity <= 0:
                 adhere = 0
             elif target_velocity > 0 and adhere <= 0:
