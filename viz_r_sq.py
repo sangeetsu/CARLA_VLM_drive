@@ -8,8 +8,8 @@ import matplotlib.patches as patches
 import matplotlib.cm as cm
 
 ## SET YOUR PARTICIPANT ID HERE
-# participant_num = 'BJ7377'
-participant_num = 'AR4924'
+participant_num = 'BJ7377'
+# participant_num = 'AR4924'
 # participant_num = 'AM5287'
 
 def calculate_velocity(df):
@@ -103,7 +103,7 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
                                 -(zone['x2'] - zone['x1']), (zone['y2'] - zone['y1']),
                                 linewidth=1, edgecolor=color, facecolor='none')
         plt.gca().add_patch(rect)
-        plt.text(-0.5 * (zone['x1'] + zone['x2']), 0.5 * (zone['y1'] + zone['y2']), f"Zone {zone['zone']}",
+        plt.text(-0.5 * (zone['x1'] + zone['x2']), 0.5 * (zone['y1'] + zone['y2']), "School Zone (3.0)" if zone['zone']==3 else f"Zone {zone['zone']}",
                 fontsize=10, color=color, verticalalignment='center', horizontalalignment='center')
 
     plt.xlabel('X (m)')
