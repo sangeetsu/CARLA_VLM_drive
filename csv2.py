@@ -3,19 +3,19 @@ import numpy as np
 import os
 
 # Your calculate_velocity function here
-def calculate_velocity(t, x, y):
-    velocity_ms = np.zeros(len(t))#in m/s
-    velocity_mph = np.zeros(len(t))#in mph
-    for i in range(1, len(t)):
-        dt = t[i] - t[i-1]
-        dx = x[i] - x[i-1]
-        dy = y[i] - y[i-1]
-        dx_m = dx# * 0.1643
-        dy_m = dy# * 0.1643
-        if dt != 0:
-            velocity_ms[i] = np.sqrt(dx_m**2 + dy_m**2) / dt# in m/s
-            velocity_mph[i] = velocity_ms[i] * 2.23694# in mph
-    return velocity_ms
+#def calculate_velocity(t, x, y):
+#    velocity_ms = np.zeros(len(t))#in m/s
+#    velocity_mph = np.zeros(len(t))#in mph
+#    for i in range(1, len(t)):
+#        dt = t[i] - t[i-1]
+#        dx = x[i] - x[i-1]
+#        dy = y[i] - y[i-1]
+#        dx_m = dx# * 0.1643
+#        dy_m = dy# * 0.1643
+#        if dt != 0:
+#            velocity_ms[i] = np.sqrt(dx_m**2 + dy_m**2) / dt# in m/s
+#            velocity_mph[i] = velocity_ms[i] * 2.23694# in mph
+#    return velocity_ms
 
 
 
@@ -55,10 +55,7 @@ def process_csv(file_path):
 
 
      # Load human trajectory data, ignoring the header and using the first, second, and third columns for t, x, y
-    human_df = pd.read_csv(file_path, skiprows=1, usecols=[0, 1, 2], names=['t', 'x', 'y'])
-    
-    # Ensure the data is sorted by time
-    sim_df = sim_df.sort_values(by='TimeStep')
+    human_df = pd.read_csv(file_path, skiprows=1, usecols=[0, 1, 2, 3], names=['t', 'x', 'y', 'z'])
     
     # Ensure all values are numeric
     human_df = human_df.apply(pd.to_numeric, errors='coerce')
@@ -68,13 +65,13 @@ def process_csv(file_path):
 
     #truncate first row of human data
     human_df = human_df.iloc[1:]
-    sim_df = sim_df.iloc[1:]
     
     # Calculate velocity for human trajectory data
     human_df['velocity_ms'] = calculate_velocity(human_df)
 
     # Smooth the human velocity values
     human_df['velocity_ms'] = smooth_velocity(human_df['velocity_ms'])
+    print(human_df)
 
 
     
@@ -83,6 +80,7 @@ def process_csv(file_path):
     #df.insert(throttle_index, 'velocity', velocity_mph)
 
     # Save the modified DataFrame to the 'combined_scrapes' directory
+    print(combined_dir)
     human_df.to_csv(os.path.join(combined_dir, os.path.basename(file_path)), index=False, header=True)
     print(f'Processed file {file_path}')
 
@@ -91,7 +89,7 @@ parent_dir = os.path.dirname(dir)
 print('parent_dir', parent_dir)
 finals_mac = ['/home/mommymythra/Carla/tuner/Virtuous_Vehicle_Tuner/BestPID']
 csv_paths = finals_mac
-combined_dir = os.path.join(parent_dir, 'combined_scrapes')
+combined_dir = os.path.join(parent_dir, 'Virtuous_Vehicle_Tuner/combined_scrapes')
 if not os.path.exists(combined_dir):
     os.makedirs(combined_dir)
 print(combined_dir)

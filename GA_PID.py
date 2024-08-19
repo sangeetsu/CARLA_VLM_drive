@@ -71,9 +71,8 @@ def fitness_func(ga_instance, solution, solution_idx):
     # Vel Adherance should be able to increase and decrease without constraint as some people
     # SPEED and others don't
     sumval = 0
-    for val in solution:
-        sumval += val**2
-    sumval = sumval - solution[7]**2
+    for val in range(0,7):
+        sumval += solution[val]**2
     finalFit2 = -(.005 * sumval)
     trajE, velE = findMeanError(error)
     finalFit = -(trajE)
@@ -125,7 +124,7 @@ def run_simulator(PIDInput):
     # new_settings.max_substeps=16
     new_settings.synchronous_mode = True
     new_settings.fixed_delta_seconds = .1
-    new_settings.no_rendering_mode = True
+    #new_settings.no_rendering_mode = True
     world.apply_settings(new_settings) 
 
     spawn_actor(world)
@@ -145,10 +144,10 @@ def run_simulator(PIDInput):
     vehicle.set_location(carla.Location(x=-90.1162,y=-0.9908,z=0.1545))
     change_index = track_data['x'].iloc[1:].ne(track_data['x'].shift().iloc[1:]).idxmax() 
     track_filter = track_data.iloc[change_index:]
-    max_T = track_filter["throttle"].max()
-    max_B = track_filter["brake"].max()
-    print("MAX THROTTLE: ", max_T)
-    print("MAX BRAKE: ", max_B)
+    #max_T = track_filter["throttle"].max()
+    #max_B = track_filter["brake"].max()
+    #print("MAX THROTTLE: ", max_T)
+    #print("MAX BRAKE: ", max_B)
     throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds)
     steering_pid = myPID.PIDLateralController(vehicle,PIDInput[3], PIDInput[4], PIDInput[5],world.get_settings().fixed_delta_seconds)
     
@@ -362,7 +361,7 @@ def get_next_waypoint(world, vehicle, waypoints, safety_buffer):
     current_velocity_3D = vehicle.get_velocity()
     current_velocity = np.sqrt(current_velocity_3D.x**2 + current_velocity_3D.y**2 + current_velocity_3D.z**2)
     THRESH = safety_buffer*(current_velocity**2)/(2*9.8)
-    maxi = max(THRESH, 10)
+    maxi = max(THRESH, 1)
     for waypoint in waypoints:
         waypoint_location = waypoint.transform.location
         bearing = get_bearing(vehicle_location, waypoint_location)
@@ -745,7 +744,7 @@ def load_gains(participant_id):
             'throttle_brake': {'kp': 0.5, 'ki': 0.1, 'kd': 0.1},
             'steering': {'kp': 0.5, 'ki': 0.1, 'kd': 0.1},
             'safety_buffer' : 0.8,
-            'speed_adhere' :  0,
+            'speed_set' :  {'s1': 0,'s2': 0,'s3': 0,'s4': 0,'s5': 0,'s6': 0,'s7': 0,'s8': 0},
         }
         # Create the file with default gains
         with open(filename, 'w') as f:
@@ -753,7 +752,7 @@ def load_gains(participant_id):
     
     throttle_brake_pid = PIDController(kp=gains['throttle_brake']['kp'], ki=gains['throttle_brake']['ki'], kd=gains['throttle_brake']['kd'])
     steering_pid = PIDController(kp=gains['steering']['kp'], ki=gains['steering']['ki'], kd=gains['steering']['kd'])
-    return throttle_brake_pid, steering_pid, gains['safety_buffer'], gains['speed_adhere']
+    return throttle_brake_pid, steering_pid, gains['safety_buffer'], gains['speed_set']
 
 # Saves the optimization values + PID for throttle and steering values to the JSON
 # Params:
@@ -774,7 +773,7 @@ def update_pids_json(participant_id, solution, lastFit, lastSol,pareto_fronts):
         'throttle_brake': {'kp': solution[0], 'ki': solution[1], 'kd': solution[2]},
         'steering': {'kp': solution[3], 'ki': solution[4], 'kd': solution[5]},
         'safety_buffer' : solution[6],
-        'speed_adhere' : solution[7],
+        'speed_set' : {'s1': solution[7],'s2': solution[8],'s3': solution[9],'s4': solution[10],'s5': solution[11],'s6': solution[12],'s7': solution[13],'s8': solution[14]},
         'lastFit': lastFit_list,
         'lastSol': lastSol_list,
         'pareto_front':pareto_fronts_fix,
@@ -845,12 +844,13 @@ def get_target_values(throttle_brake_pid, steering_pid, current_velocity, target
 #   participant_csv - a collected CSV file from a database
 # Return:
 #   df - the track data's data frame
+# MADE AN EDIT HERE DON'T FORGET PLEASE PLEASE PLEASE. DON'T CHANGEM Y MIND
 def traj_loader(participant_csv):
     # Read the CSV file into a Pandas DataFrame, skipping the existing headers
     df = pd.read_csv(participant_csv, header=0)  # header=0 indicates that the first line contains headers, which will be replaced
 
     # Assign the correct column names
-    df.columns = ['t', 'x', 'y', 'z', 'throttle', 'steering', 'brake', 'hand_brake','reverse','manual_gear_shift','gear']
+    df.columns = ['t', 'x', 'y', 'z', 'dt','dx','dy', 'velocity_ms']
 
     # Calculate velocity and add it to the DataFrame
     df['vel_mph'] = calculate_velocity(df)
@@ -959,30 +959,31 @@ if __name__ == "__main__":
     global participant_id
     global track_data
     args.ID = args.ID[1:-1]
-    participant_path = 'participant_data/'+args.ID+'final.csv'
+    participant_path = 'combined_scrapes/'+args.ID+'final.csv'
     participant_filename = os.path.basename(participant_path)
     participant_id = os.path.splitext(participant_filename)[0]
     track_data = traj_loader(participant_path)
     try:
         if args.New:
             # Grab initial values for the participant
-            throttle_brake_gains, steering_gains, safety_buffer, speed_adhere = load_gains(args.ID)
+            throttle_brake_gains, steering_gains, safety_buffer, sp_st = load_gains(args.ID)
             numGener = 10
-            numMat = 7
-            initPop = np.random.rand(10,8)
-            newC = initPop[:,-1] * 10
-            rounded = np.round(newC)
-            initPop[:,-1] = rounded 
+            numMat = 6
+            initPop = np.random.rand(10,15)
+            for x in range(-8,0):
+                newC = initPop[:,x] * 10
+                rounded = np.round(newC)
+                initPop[:,x] = rounded 
             initPop[0] = np.array([throttle_brake_gains.kp, throttle_brake_gains.ki, throttle_brake_gains.kd,
-                       steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, speed_adhere])
-            geneSpace = [{'low': 0, 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low': 0, 'high': 5},{'low': 0, 'high': 5},{'low': -15, 'high': 15},]
+                       steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, sp_st[0], sp_st[1], sp_st[2], sp_st[3], sp_st[4], sp_st[5], sp_st[6], sp_st[7]])
+            geneSpace = [{'low': 0, 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low': 0, 'high': 5},{'low': 0, 'high': 5},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},]
             parenSel = "nsga2"
             ga_instance = pg.GA(num_generations = numGener,
                                 initial_population=initPop,
                                 num_parents_mating=numMat,
                                 fitness_func=fitness_func,
                                 on_generation=on_generation,
-                                mutation_num_genes=2,
+                                mutation_num_genes=5,
                                 mutation_type="random",
                                 mutation_by_replacement=True,
                                 random_mutation_min_val=-1.0,

@@ -45,7 +45,7 @@ def load_pid_gains_from_json(json_file_path):
         throttle_brake_pid = [data['throttle_brake']['kp'], data['throttle_brake']['ki'], data['throttle_brake']['kd']]
         steering_pid = [data['steering']['kp'], data['steering']['ki'], data['steering']['kd']]
         safety = data['safety_buffer']
-        speed = data['speed_adhere']
+        speed = data['speed_set']
     return throttle_brake_pid, steering_pid, safety, speed
 
 
@@ -104,7 +104,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
     wheelbase = np.linalg.norm([offset.x, offset.y, offset.z])
     vehicle.set_simulate_physics(True)
     # BEGIN THE TESTER AREA #########################################
-    participant_path = 'BestPID/'+ ID + 'final.csv'
+    participant_path = 'combined_scrapes/'+ ID + 'final.csv'
     participant_filename = os.path.basename(participant_path)
     participant_id = os.path.splitext(participant_filename)[0]
     if optimizer == "GA":
@@ -120,10 +120,10 @@ def run_carla_instance(PIDInput, optimizer, ID):
     # UPDATE 3:10 AM: just using max doesn't help because it may pick up the extra bullshit in the front where poeple are just smacking the throttle for no reason. 
     change_index = track_data['x'].iloc[1:].ne(track_data['x'].shift().iloc[1:]).idxmax() 
     track_filter = track_data.iloc[change_index:]
-    max_T = track_filter["throttle"].max()
-    max_B = track_filter["brake"].max()
-    print("MAX THROTTLE: ", max_T)
-    print("MAX BRAKE: ", max_B)
+    #max_T = track_filter["throttle"].max()
+    #max_B = track_filter["brake"].max()
+    #print("MAX THROTTLE: ", max_T)
+    #print("MAX BRAKE: ", max_B)
     throttle_brake_pid = myPID.PIDLongitudinalController(vehicle,PIDInput[0], PIDInput[1], PIDInput[2],world.get_settings().fixed_delta_seconds)
     steering_pid = myPID.PIDLateralController(vehicle,PIDInput[3], PIDInput[4], PIDInput[5],world.get_settings().fixed_delta_seconds)
 
@@ -196,19 +196,8 @@ def run_carla_instance(PIDInput, optimizer, ID):
                     target_velocity = old_target + limit
             old_target = target_velocity
             print("Old Target Value: ", old_target)
-            # This is a GREAT place to filter! 
-            # We have current velocity and target velocity. 
-            # We set a generic constant for "maximum velocity change" This may be dynamic later
-            # After that, we compute the difference between current and target and check if it exceeds the maxim
-            # If it exceeds maximum, compute new target using maxim, otherwise use current target
-            # For now, this number is 3 as a toy example.
-            #maxim_vel_change = 5
-            #diffvel = current_velocity - target_velocity
             print("Current Vel: ", current_velocity)
             print("Current Target: ", target_velocity)
-            #print("Difference: ", diffvel)
-            #if abs(diffvel) > maxim_vel_change:
-            #    target_velocity = current_velocity + maxim_vel_change
             # END TESTING ZONE
             #print("Final Target: ", target_velocity)
             if optimizer == "GA":
@@ -257,10 +246,10 @@ def run_carla_instance(PIDInput, optimizer, ID):
 def main(participant_path, optimizer, ID):
     # Load the PID gains
     json_file_path = participant_path  # Update with the correct path if necessary
-    throttle_brake_pid, steering_pid, safety, speed = load_pid_gains_from_json(json_file_path)
+    throttle_brake_pid, steering_pid, safety, sp_st = load_pid_gains_from_json(json_file_path)
     
     # Combine PID gains for simulation input
-    PIDInput = throttle_brake_pid + steering_pid + [safety] + [speed]
+    PIDInput = throttle_brake_pid + steering_pid + [safety] + sp_st
     
     # Call the simulation with the loaded PID values
     # This part assumes you have a run_simulator function ready to use these values
