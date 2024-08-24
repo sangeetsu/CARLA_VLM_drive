@@ -9,8 +9,8 @@ import matplotlib.cm as cm
 
 ## SET YOUR PARTICIPANT ID HERE
 # participant_num = 'BJ7377'
-participant_num = 'AR4924'
-# participant_num = 'AM5287'
+# participant_num = 'AR4924'
+participant_num = 'AM5287'
 
 def calculate_velocity(df):
     df['dt'] = df['t'].diff()
@@ -51,11 +51,13 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
     plt.figtext(0.1, 0.01, f"R^2 (velocity): {r2_velocity}", wrap=True, horizontalalignment='center', fontsize=12)
     plt.figtext(0.9, 0.01, f"R^2 (position): {r2_position}", wrap=True, horizontalalignment='center', fontsize=12)
     landmarks_df = pd.read_csv('assets/plot_landmarks.csv')
-    school_zone_start = (0.01 * landmarks_df[landmarks_df['property'] == 'SZ']['x'].values[0], -60)
-    school_zone_end = (0.01 * landmarks_df[landmarks_df['property'] == 'SZ']['x'].values[1], -40)
-    school_zone_indices = sim_df.apply(lambda row: is_within_zone(row['PosX'], row['PosY'], school_zone_start, school_zone_end), axis=1)
 
-    #Uncomment if you want velocities in mph
+    ## School Zone Detection (Deprecated)
+    # school_zone_start = (0.01 * landmarks_df[landmarks_df['property'] == 'SZ']['x'].values[0], -60)
+    # school_zone_end = (0.01 * landmarks_df[landmarks_df['property'] == 'SZ']['x'].values[1], -40)
+    # school_zone_indices = sim_df.apply(lambda row: is_within_zone(row['PosX'], row['PosY'], school_zone_start, school_zone_end), axis=1)
+
+    # Uncomment if you want velocities in mph
     sim_velocities = sim_velocities * 2.23694
     nearest_human_velocities = nearest_human_velocities * 2.23694
 
@@ -66,26 +68,25 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
     plt.plot(track_percentage, sim_velocities, 'b-', label='Simulation', linewidth=1)
     plt.plot(track_percentage, nearest_human_velocities, 'r--', label='Human', linewidth=1)
 
-    # Alternate grey and white highlights for zones, with Zone 3 highlighted in yellow
+    # Fix y-axis range and add alphabet labels at a fixed y-position
+    plt.ylim(0, 90)
+    zone_labels = list("ABCDEFGH")  # Labels for zones
+    y_position = 85  # Fixed y-position for the zone labels
     for i, (_, zone) in enumerate(zone_df.iterrows()):
-        if zone['zone'] == 3:
-            color = 'yellow'  # Highlight Zone 3 in yellow
-        else:
-            color = 'lightgrey' if i % 2 == 0 else 'white'  # Alternate grey and white for other zones
-        
+        color = 'lightgrey' if i % 2 == 0 else 'white'  # Alternate grey and white for zones
         zone_indices = sim_df.apply(lambda row: is_within_zone(row['PosX'], row['PosY'], (zone['x1'], zone['y1']), (zone['x2'], zone['y2'])), axis=1)
-        for idx, in_zone in enumerate(zone_indices):
-            if in_zone:
-                if idx < len(track_percentage) - 1:
-                    plt.axvspan(track_percentage[idx], track_percentage[idx+1], color=color, alpha=0.3)
-                else:
-                    plt.axvspan(track_percentage[idx], track_percentage[idx], color=color, alpha=0.3)
+        in_zone_indices = [idx for idx, in_zone in enumerate(zone_indices) if in_zone]
+
+        if in_zone_indices:
+            plt.axvspan(track_percentage[in_zone_indices[0]], track_percentage[in_zone_indices[-1]], color=color, alpha=0.3)
+            mid_idx = in_zone_indices[len(in_zone_indices) // 2]
+            plt.text(track_percentage[mid_idx], y_position, zone_labels[i], fontsize=14, color='black', ha='center')
 
     plt.xlabel('Track Completed (%)')
     plt.ylabel('Velocity (mph)')
     plt.title('Velocity Comparison')
-    plt.legend()
-    
+    plt.legend(loc='lower right')  # Move the legend to the bottom right
+
     plt.subplot(1, 2, 2)
     plt.plot(-sim_df['PosX'], sim_df['PosY'], 'b-', markersize=3, linewidth=1, alpha=0.7)
     plt.plot(-human_df['x'], human_df['y'], 'r--', markersize=3, linewidth=1, alpha=0.7)
@@ -95,19 +96,19 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
         plt.text(-0.01*landmarks_df['x'][i], 0.01*landmarks_df['y'][i], label, fontsize=9, color='black')
 
     # Define a list of colors or use a colormap
-    colors = cm.get_cmap('tab10', len(zone_df))
+    # colors = cm.get_cmap('tab10', len(zone_df))
 
     for i, (_, zone) in enumerate(zone_df.iterrows()):
-        color = colors(i)
+        color = 'lightgrey' if i % 2 == 0 else 'white'  # Match the shading to velocity comparison
         rect = patches.Rectangle((-zone['x1'], zone['y1']),
                                 -(zone['x2'] - zone['x1']), (zone['y2'] - zone['y1']),
-                                linewidth=1, edgecolor=color, facecolor='none')
+                                linewidth=1, edgecolor='black', facecolor=color, alpha=0.3)
         plt.gca().add_patch(rect)
-        plt.text(-0.5 * (zone['x1'] + zone['x2']), 0.5 * (zone['y1'] + zone['y2']), f"Zone {zone['zone']}",
-                fontsize=10, color=color, verticalalignment='center', horizontalalignment='center')
+        plt.text(-0.5 * (zone['x1'] + zone['x2']), 0.5 * (zone['y1'] + zone['y2']), f"Zone {zone_labels[i]}",
+                fontsize=10, color='black', verticalalignment='center', horizontalalignment='center')
 
-    plt.xlabel('PosX')
-    plt.ylabel('PosY')
+    plt.xlabel('X (m)')
+    plt.ylabel('Y (m)')
     plt.title('Position Comparison')
     plt.legend()
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1, wspace=0.3, hspace=0.3)

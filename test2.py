@@ -8,8 +8,8 @@ import matplotlib.patches as patches
 import matplotlib.cm as cm
 
 ## SET YOUR PARTICIPANT ID HERE
-participant_num = 'BJ7377'
-# participant_num = 'AR4924'
+# participant_num = 'BJ7377'
+participant_num = 'AR4924'
 # participant_num = 'AM5287'
 
 def calculate_velocity(df):
@@ -54,12 +54,17 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
     school_zone_start = (0.01 * landmarks_df[landmarks_df['property'] == 'SZ']['x'].values[0], -60)
     school_zone_end = (0.01 * landmarks_df[landmarks_df['property'] == 'SZ']['x'].values[1], -40)
     school_zone_indices = sim_df.apply(lambda row: is_within_zone(row['PosX'], row['PosY'], school_zone_start, school_zone_end), axis=1)
+
+    #Uncomment if you want velocities in mph
     sim_velocities = sim_velocities * 2.23694
     nearest_human_velocities = nearest_human_velocities * 2.23694
 
+    # Calculate percentage of track completed
+    track_percentage = np.linspace(0, 100, len(sim_df))
+
     plt.subplot(1, 2, 1)
-    plt.plot(range(len(sim_df)), sim_velocities, 'b-', label='Simulation', linewidth=1)
-    plt.plot(range(len(nearest_human_velocities)), nearest_human_velocities, 'r--', label='Human', linewidth=1)
+    plt.plot(track_percentage, sim_velocities, 'b-', label='Simulation', linewidth=1)
+    plt.plot(track_percentage, nearest_human_velocities, 'r--', label='Human', linewidth=1)
 
     # Alternate grey and white highlights for zones, with Zone 3 highlighted in yellow
     for i, (_, zone) in enumerate(zone_df.iterrows()):
@@ -71,9 +76,12 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
         zone_indices = sim_df.apply(lambda row: is_within_zone(row['PosX'], row['PosY'], (zone['x1'], zone['y1']), (zone['x2'], zone['y2'])), axis=1)
         for idx, in_zone in enumerate(zone_indices):
             if in_zone:
-                plt.axvspan(idx, idx+1, color=color, alpha=0.3)
+                if idx < len(track_percentage) - 1:
+                    plt.axvspan(track_percentage[idx], track_percentage[idx+1], color=color, alpha=0.3)
+                else:
+                    plt.axvspan(track_percentage[idx], track_percentage[idx], color=color, alpha=0.3)
 
-    plt.xlabel('Index')
+    plt.xlabel('Track Completed (%)')
     plt.ylabel('Velocity (mph)')
     plt.title('Velocity Comparison')
     plt.legend()
@@ -88,6 +96,7 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
 
     # Define a list of colors or use a colormap
     colors = cm.get_cmap('tab10', len(zone_df))
+    # colors = 'lightgrey' if i % 2 == 0 else 'white'
 
     for i, (_, zone) in enumerate(zone_df.iterrows()):
         color = colors(i)
@@ -95,11 +104,11 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
                                 -(zone['x2'] - zone['x1']), (zone['y2'] - zone['y1']),
                                 linewidth=1, edgecolor=color, facecolor='none')
         plt.gca().add_patch(rect)
-        plt.text(-0.5 * (zone['x1'] + zone['x2']), 0.5 * (zone['y1'] + zone['y2']), f"Zone {zone['zone']}",
+        plt.text(-0.5 * (zone['x1'] + zone['x2']), 0.5 * (zone['y1'] + zone['y2']), "School Zone (3.0)" if zone['zone']==3 else f"Zone {zone['zone']}",
                 fontsize=10, color=color, verticalalignment='center', horizontalalignment='center')
 
-    plt.xlabel('PosX')
-    plt.ylabel('PosY')
+    plt.xlabel('X (m)')
+    plt.ylabel('Y (m)')
     plt.title('Position Comparison')
     plt.legend()
     plt.subplots_adjust(left=0.1, right=0.9, top=0.9, bottom=0.1, wspace=0.3, hspace=0.3)
