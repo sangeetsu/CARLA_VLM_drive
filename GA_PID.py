@@ -199,7 +199,7 @@ def run_simulator(PIDInput):
     # Implementing Flag Zones for the space
     VelZones = [PIDInput[7],PIDInput[8],PIDInput[9],PIDInput[10],PIDInput[11],PIDInput[12],PIDInput[13],PIDInput[14]]
     CurrentZone = -1
-    zones = pd.read_csv('zone_list.csv')
+    zones = pd.read_csv('assets/zone_list.csv')
     #limiters = calculateLimiters(track_data,zones)
 
 
@@ -208,6 +208,7 @@ def run_simulator(PIDInput):
     old_target = 0
     # initial waypoint grab. Functionally just initializes a variable.  
     waypoint = get_next_waypoint(world, vehicle, my_custom_waypoints, PIDInput[6])
+    rFlag = False
     while counter < 480:
         # Get simulation time
         frame = world.get_snapshot().frame
@@ -302,6 +303,7 @@ def run_simulator(PIDInput):
             # Calculate the reward values (error)
             # 6/18/24 NOTE - ADD VELOCITY REWARD TO TRAJECTORY REWARD INTO ONE MAYBE LATER, BUT FIRST TRY FULL POSITIONAL CHECK.
             if CurrentZone > -1:
+                rFlag = True
                 velocity_reward, trajectory_reward = calculate_reward(current_x, current_y, current_throttle, current_brake, current_steering, current_velocity, track_data)
                 rewardsArr.append([velocity_reward, trajectory_reward])
 
@@ -343,6 +345,9 @@ def run_simulator(PIDInput):
             else:
                 snap = world.get_snapshot()
                 counter = round(counter + 0.1,2)
+    #Cook that guy if he doesn't progress
+    if rFlag == False:
+        rewardsArr.append([9000000000,90000000000])
     return rewardsArr
 
 

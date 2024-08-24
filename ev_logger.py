@@ -1,4 +1,4 @@
-
+import pandas as pd
 import csv
 import os
 
@@ -45,7 +45,7 @@ def load_pid_gains_from_json(json_file_path):
         throttle_brake_pid = [data['throttle_brake']['kp'], data['throttle_brake']['ki'], data['throttle_brake']['kd']]
         steering_pid = [data['steering']['kp'], data['steering']['ki'], data['steering']['kd']]
         safety = data['safety_buffer']
-        speed = data['speed_set']
+        speed = [data['speed_set']['s1'],data['speed_set']['s2'],data['speed_set']['s3'],data['speed_set']['s4'],data['speed_set']['s5'],data['speed_set']['s6'],data['speed_set']['s7'],data['speed_set']['s8']]
     return throttle_brake_pid, steering_pid, safety, speed
 
 
@@ -134,7 +134,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
     # Implementing Flag Zones for the space
     VelZones = [PIDInput[7],PIDInput[8],PIDInput[9],PIDInput[10],PIDInput[11],PIDInput[12],PIDInput[13],PIDInput[14]]
     CurrentZone = -1
-    zones = pd.read_csv('zone_list.csv')
+    zones = pd.read_csv('assets/zone_list.csv')
 
     
     # Simulation loop
@@ -185,15 +185,15 @@ def run_carla_instance(PIDInput, optimizer, ID):
             #Before checking waypoints, check if vehicle in in a zone.
             # If Vehicle between the coordinates of a zone, then set all zones to False and set current zone to True
             for x in range(0,8):
-                xBound = (min(zones[x]['x1'],zones[x]['x2']), max(zones[x]['x1'],zones[x]['x2']))
-                yBound = (min(zones[x]['y1'],zones[x]['y2']), max(zones[x]['y1'],zones[x]['y2']))
+                xBound = (min(zones.iloc[x]['x1'],zones.iloc[x]['x2']), max(zones.iloc[x]['x1'],zones.iloc[x]['x2']))
+                yBound = (min(zones.iloc[x]['y1'],zones.iloc[x]['y2']), max(zones.iloc[x]['y1'],zones.iloc[x]['y2']))
                 if current_x > xBound[0] and current_x <= xBound[1]:
                     if current_y > yBound[0] and current_y <= yBound[1]:
                         CurrentZone = x
                         break
                     else:
                         CurrentZone = -1
-                else: 
+                else:
                     CurrentZone = -1
 
 
