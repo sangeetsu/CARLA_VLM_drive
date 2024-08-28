@@ -181,6 +181,8 @@ def run_simulator(PIDInput):
     offset = rear_axle_center - vehicle.get_location()
     wheelbase = np.linalg.norm([offset.x, offset.y, offset.z])
     vehicle.set_simulate_physics(True)
+    stamp1 = None
+    stamp2 = None
     #vehicle.set_location(carla.Location(x=-90.1162,y=-0.9908,z=0.1545))
     #change_index = track_data['x'].iloc[1:].ne(track_data['x'].shift().iloc[1:]).idxmax() 
     #track_filter = track_data.iloc[change_index:]
@@ -208,6 +210,7 @@ def run_simulator(PIDInput):
     old_target = 0
     # initial waypoint grab. Functionally just initializes a variable.  
     waypoint = get_next_waypoint(world, vehicle, my_custom_waypoints, PIDInput[6])
+    stamp1 = world.get_snapshot()
     rFlag = False
     while counter < 480:
         # Get simulation time
@@ -289,7 +292,7 @@ def run_simulator(PIDInput):
             target_velocity = adhere
             # Place Tweaks 08/10/24
             #limit = limiters[CurrentZone]
-            limit = .008
+            limit = .016
             if(target_velocity >= old_target):
                 if (target_velocity - old_target) > limit:
                     target_velocity = old_target + limit
@@ -302,8 +305,10 @@ def run_simulator(PIDInput):
 
             # Calculate the reward values (error)
             # 6/18/24 NOTE - ADD VELOCITY REWARD TO TRAJECTORY REWARD INTO ONE MAYBE LATER, BUT FIRST TRY FULL POSITIONAL CHECK.
-            if CurrentZone > -1:
+            if rFlag == False and CurrentZone > -1 and counter > 1:
                 rFlag = True
+                stamp2 = world.get_snapshot()
+            if CurrentZone > -1 and counter > 1:
                 velocity_reward, trajectory_reward = calculate_reward(current_x, current_y, current_throttle, current_brake, current_steering, current_velocity, track_data)
                 rewardsArr.append([velocity_reward, trajectory_reward])
 
@@ -346,8 +351,25 @@ def run_simulator(PIDInput):
                 snap = world.get_snapshot()
                 counter = round(counter + 0.1,2)
     #Cook that guy if he doesn't progress
+    # Might need apply this regardless and time improve the reward. Like. A static negative for not reaching it... but a better negative if they do that improves with... TIME.
     if rFlag == False:
         rewardsArr.append([9000000000,90000000000])
+    else:
+        timestamp1 = stamp1.timestamp.elapsed_seconds
+        print(timestamp1)
+        timestamp2 = stamp2.timestamp.elapsed_seconds
+        print(timestamp2)
+        time = timestamp2-timestamp1
+        print(time)
+        multFact = time/60
+        multRew = multFact * 1000000
+        rewardsArr.append([multRew,multRew])
+        # We choose 143 based on manual testing of average times, which appear to range from 139-143.
+        # This will create a simple formula: time/143 = multFact
+        # Reward will be 10000000 as an arbitrarily large number, but one that IS lesser than the horrible reward above
+        # multFact * Reward (which should always be less than the GIGA reward above) = new Reward
+        # Faster times getting to the *ZONE 1* will be rewarded accordingly. 
+
     return rewardsArr
 
 
