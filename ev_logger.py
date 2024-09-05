@@ -142,8 +142,9 @@ def run_carla_instance(PIDInput, optimizer, ID):
     log_file_path = 'simulation_log_'+participant_id+'.csv'#'simulation_log.csv'
 
     #Specify target position to end simulation
-    target_x = -40  # Change this to the desired target x position
-    target_y = 57  # Change this to the desired target y position
+    # Old -40,57
+    target_x = 17.7  # Change this to the desired target x position
+    target_y = -50  # Change this to the desired target y position
     old_target = 0
     while True:
         time_step += 1

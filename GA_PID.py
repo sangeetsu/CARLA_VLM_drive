@@ -37,7 +37,9 @@ collFlag = False
 # Return:
 #   Boolean - If waypoint is in the last 15, True, else False
 def waypoint_last_5_check(waypoint,waylist):
-    wayselect = waylist[-21:]
+    #21 is for last stop point
+    #219 is for Zone 3 as 182 is the waypoint, 402 total points, 220 points back... need to go one closer
+    wayselect = waylist[-219:]
     for wp in wayselect:
         if waypoint is wp:
             return True
@@ -169,6 +171,11 @@ def run_simulator(PIDInput):
 
     spawn_actor(world)
     my_custom_waypoints = waypoint_gen(world, world.get_map())
+    counter = 0
+    for points in my_custom_waypoints:
+        print(counter)
+        print(points)
+        counter = counter + 1
 
     # Vehicle properties setup
     # print(actor_list)
@@ -292,7 +299,7 @@ def run_simulator(PIDInput):
             target_velocity = adhere
             # Place Tweaks 08/10/24
             #limit = limiters[CurrentZone]
-            limit = .016
+            limit = .128
             if(target_velocity >= old_target):
                 if (target_velocity - old_target) > limit:
                     target_velocity = old_target + limit
@@ -310,7 +317,10 @@ def run_simulator(PIDInput):
                 stamp2 = world.get_snapshot()
             if CurrentZone > -1 and counter > 1:
                 velocity_reward, trajectory_reward = calculate_reward(current_x, current_y, current_throttle, current_brake, current_steering, current_velocity, track_data)
-                rewardsArr.append([velocity_reward, trajectory_reward])
+                conglom = 0.50*velocity_reward
+                conglom2 = 0.50*trajectory_reward
+                conglom3 = conglom + conglom2
+                rewardsArr.append([velocity_reward, conglom3])
 
             # Calculate target throttle and steer values
             # Throttle may be negative. If target throttle is < 0, then we are braking.
@@ -753,6 +763,8 @@ def find_disparity(polar_coordinates):
 def degrees_to_steering_percentage(degrees):
     """ Returns a steering "percentage" value between 0.0 (left) and 1.0
     (right) that is as close as possible to the requested degrees. The car's
+
+
     wheels can't turn more than max_angle in either direction. """
     degrees = -(degrees - 90)
     max_angle = 45
@@ -838,7 +850,7 @@ def load_gains(participant_id):
             'throttle_brake': {'kp': 0.5, 'ki': 0.1, 'kd': 0.1},
             'steering': {'kp': 0.5, 'ki': 0.1, 'kd': 0.1},
             'safety_buffer' : 0.8,
-            'speed_set' :  {'s1': 0,'s2': 0,'s3': 0,'s4': 0,'s5': 0,'s6': 0,'s7': 0,'s8': 0},
+            'speed_set' :  {'s1': 15,'s2': 15,'s3': 15,'s4': 15,'s5': 15,'s6': 15,'s7': 15,'s8': 15},
         }
         # Create the file with default gains
         with open(filename, 'w') as f:
@@ -1062,7 +1074,7 @@ if __name__ == "__main__":
             # Grab initial values for the participant
             throttle_brake_gains, steering_gains, safety_buffer, sp_st = load_gains(args.ID)
             numGener = 10
-            numMat = 6
+            numMat = 4
             initPop = np.random.rand(10,15)
             for x in range(-8,0):
                 newC = initPop[:,x] * 10
@@ -1070,18 +1082,18 @@ if __name__ == "__main__":
                 initPop[:,x] = rounded 
             initPop[0] = np.array([throttle_brake_gains.kp, throttle_brake_gains.ki, throttle_brake_gains.kd,
                        steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, sp_st['s1'], sp_st['s2'], sp_st['s3'], sp_st['s4'], sp_st['s5'], sp_st['s6'], sp_st['s7'], sp_st['s8']])
-            geneSpace = [{'low': 0, 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low': 0, 'high': 5},{'low': 0, 'high': 5},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},{'low': -15, 'high': 15},]
+            geneSpace = [{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},]
             parenSel = "nsga2"
             ga_instance = pg.GA(num_generations = numGener,
                                 initial_population=initPop,
                                 num_parents_mating=numMat,
                                 fitness_func=fitness_func,
                                 on_generation=on_generation,
-                                mutation_num_genes=5,
                                 mutation_type="random",
-                                mutation_by_replacement=True,
-                                random_mutation_min_val=-1.0,
-                                random_mutation_max_val=1.0,
+                                mutation_probability=0.5,
+                                mutation_by_replacement=False,
+                                random_mutation_min_val=-0.25,
+                                random_mutation_max_val=0.25,
                                 parent_selection_type = parenSel,
                                 gene_space = geneSpace,
                                 )
