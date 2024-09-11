@@ -23,7 +23,7 @@ wait $PID3
 kill -9 $PID
 kill -9 $PID2
 sleep 3
-for n in {2..50};
+for n in {2..40};
 do
 	echo "Starting Iteration $n" 
 	#/home/path/to/CarlaUE4.sh -windowed > /dev/null 2>&1 &

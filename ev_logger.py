@@ -1,4 +1,4 @@
-
+import pandas as pd
 import csv
 import os
 
@@ -45,7 +45,7 @@ def load_pid_gains_from_json(json_file_path):
         throttle_brake_pid = [data['throttle_brake']['kp'], data['throttle_brake']['ki'], data['throttle_brake']['kd']]
         steering_pid = [data['steering']['kp'], data['steering']['ki'], data['steering']['kd']]
         safety = data['safety_buffer']
-        speed = data['speed_set']
+        speed = [data['speed_set']['s1'],data['speed_set']['s2'],data['speed_set']['s3'],data['speed_set']['s4'],data['speed_set']['s5'],data['speed_set']['s6'],data['speed_set']['s7'],data['speed_set']['s8']]
     return throttle_brake_pid, steering_pid, safety, speed
 
 
@@ -129,15 +129,22 @@ def run_carla_instance(PIDInput, optimizer, ID):
 
     #start recording
     client.start_recorder(participant_id + '.log', True)
-    velAdh = PIDInput[7]
-    #velAdh = 0
-    # Simulation loop
+
+
+    # Implementing Flag Zones for the space
+    VelZones = [PIDInput[7],PIDInput[8],PIDInput[9],PIDInput[10],PIDInput[11],PIDInput[12],PIDInput[13],PIDInput[14]]
+    CurrentZone = -1
+    zones = pd.read_csv('assets/zone_list.csv')
+
     
+    # Simulation loop
     time_step = 0
     log_file_path = 'simulation_log_'+participant_id+'.csv'#'simulation_log.csv'
 
     #Specify target position to end simulation
-    target_x = -40  # Change this to the desired target x position
+    # Old -45,57
+    # short spot: 17.7,-50
+    target_x = -45  # Change this to the desired target x position
     target_y = 57  # Change this to the desired target y position
     old_target = 0
     while True:
@@ -176,13 +183,31 @@ def run_carla_instance(PIDInput, optimizer, ID):
             current_velocity_3D = vehicle.get_velocity()
             current_velocity = np.sqrt(current_velocity_3D.x**2 + current_velocity_3D.y**2 + current_velocity_3D.z**2)
             current_heading = rotation.yaw
+            
+            #Before checking waypoints, check if vehicle in in a zone.
+            # If Vehicle between the coordinates of a zone, then set all zones to False and set current zone to True
+            for x in range(0,8):
+                xBound = (min(zones.iloc[x]['x1'],zones.iloc[x]['x2']), max(zones.iloc[x]['x1'],zones.iloc[x]['x2']))
+                yBound = (min(zones.iloc[x]['y1'],zones.iloc[x]['y2']), max(zones.iloc[x]['y1'],zones.iloc[x]['y2']))
+                if current_x > xBound[0] and current_x <= xBound[1]:
+                    if current_y > yBound[0] and current_y <= yBound[1]:
+                        CurrentZone = x
+                        break
+                    else:
+                        CurrentZone = -1
+                else:
+                    CurrentZone = -1
+
 
             waypoint_location = waypoint.transform.location
             closest_idx = np.argmin(np.sum((base_traj_data[['x', 'y']].values - np.array([waypoint_location.x, waypoint_location.y]))**2, axis=1))
             closest_data = base_traj_data.iloc[closest_idx]
             target_velocity = closest_data['speed_limit']
             print("Scheduled Velocity: ", target_velocity)
-            adhere = target_velocity + velAdh
+            adhere = 0
+            if CurrentZone > -1:
+                adhere = VelZones[CurrentZone]
+            adhere = target_velocity + adhere
             if target_velocity <= 0:
                 adhere = 0
             elif target_velocity > 0 and adhere <= 0:
@@ -190,7 +215,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
             target_velocity = adhere
             #a = 0.9
             #target_velocity = a*current_velocity+(1-a)*target_velocity
-            limit = .008
+            limit = .064
             if(target_velocity >= old_target):
                 if (target_velocity - old_target) > limit:
                     target_velocity = old_target + limit

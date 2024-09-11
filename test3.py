@@ -8,9 +8,9 @@ import matplotlib.patches as patches
 import matplotlib.cm as cm
 
 ## SET YOUR PARTICIPANT ID HERE
-# participant_num = 'BJ7377'
-# participant_num = 'AR4924'
-participant_num = 'AM5287'
+participant_num = 'BJ7377'
+#participant_num = 'AR4924'
+#participant_num = 'AM5287'
 
 def calculate_velocity(df):
     df['dt'] = df['t'].diff()
@@ -69,7 +69,7 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
     plt.plot(track_percentage, nearest_human_velocities, 'r--', label='Human', linewidth=1)
 
     # Fix y-axis range and add alphabet labels at a fixed y-position
-    plt.ylim(0, 90)
+    plt.ylim(0, 120)
     zone_labels = list("ABCDEFGH")  # Labels for zones
     y_position = 85  # Fixed y-position for the zone labels
     for i, (_, zone) in enumerate(zone_df.iterrows()):

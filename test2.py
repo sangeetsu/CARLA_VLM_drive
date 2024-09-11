@@ -8,8 +8,8 @@ import matplotlib.patches as patches
 import matplotlib.cm as cm
 
 ## SET YOUR PARTICIPANT ID HERE
-# participant_num = 'BJ7377'
-participant_num = 'AR4924'
+participant_num = 'BJ7377'
+#participant_num = 'AR4924'
 # participant_num = 'AM5287'
 
 def calculate_velocity(df):
