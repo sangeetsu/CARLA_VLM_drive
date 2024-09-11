@@ -142,9 +142,10 @@ def run_carla_instance(PIDInput, optimizer, ID):
     log_file_path = 'simulation_log_'+participant_id+'.csv'#'simulation_log.csv'
 
     #Specify target position to end simulation
-    # Old -40,57
-    target_x = 17.7  # Change this to the desired target x position
-    target_y = -50  # Change this to the desired target y position
+    # Old -45,57
+    # short spot: 17.7,-50
+    target_x = -45  # Change this to the desired target x position
+    target_y = 57  # Change this to the desired target y position
     old_target = 0
     while True:
         time_step += 1
@@ -214,7 +215,7 @@ def run_carla_instance(PIDInput, optimizer, ID):
             target_velocity = adhere
             #a = 0.9
             #target_velocity = a*current_velocity+(1-a)*target_velocity
-            limit = .008
+            limit = .064
             if(target_velocity >= old_target):
                 if (target_velocity - old_target) > limit:
                     target_velocity = old_target + limit

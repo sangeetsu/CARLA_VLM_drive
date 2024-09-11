@@ -39,7 +39,7 @@ collFlag = False
 def waypoint_last_5_check(waypoint,waylist):
     #21 is for last stop point
     #219 is for Zone 3 as 182 is the waypoint, 402 total points, 220 points back... need to go one closer
-    wayselect = waylist[-219:]
+    wayselect = waylist[-21:]
     for wp in wayselect:
         if waypoint is wp:
             return True
@@ -53,6 +53,9 @@ def waypoint_last_5_check(waypoint,waylist):
 # 6/18/24 - ADJUSTMENT**** 
 # Added: Regularization Sum of Least Squares of PID values and Buffer 
 # (Speed Adherance is left out due to high values that should exist)
+# 9/10/24 - MAJOR ADJUSTMENT***************
+# Switched from MSE to Reverse Huber Loss
+# Added completion bonus here not in etc. I want to penalize AFTER calculation. 
 # Param:
 #   ga_instance - an instance of the genetic algorithm
 #   solution - 6 PID values, 1 safety buffer value, and 1 static speed_adherance value in a list
@@ -62,7 +65,23 @@ def waypoint_last_5_check(waypoint,waylist):
 #   fitness2 - 1/MSE of velocity error
 def fitness_func(ga_instance, solution, solution_idx):
     print("Current Solution: ",solution)
-    error = run_simulator(solution)
+    error, complete, timeBonus = run_simulator(solution)
+    # This section correlates as follows: 0 for incomplete, 1 for faulty waypoint, 2 for complete, 3 for crash
+    # Crashing is worst case. Faulty Waypoint is goofy second worse case. Incomplete could mean a lot, so lower penalty
+    # Complete is best case. Do NOT penalize completion, but still evaluate the errors on their own merit. 
+    # Completion cases should compete with themselves for best completion errors. 
+    print("THESE ARE THE ERROR VALUES:")
+    print(error)
+    Bonus = 0
+    if complete == 0:
+        Bonus = -5000
+    elif complete == 1:
+        Bonus = -10000
+    elif complete == 2:
+        Bonus = 0
+    elif complete == 3:
+        Bonus = -20000
+
     for actor in actor_list:
         try:
             actor.destroy()
@@ -76,9 +95,14 @@ def fitness_func(ga_instance, solution, solution_idx):
     for val in range(0,7):
         sumval += solution[val]**2
     finalFit2 = -(.005 * sumval)
-    trajE, velE = findMeanError(error)
-    finalFit = -(trajE)
-    return [finalFit,finalFit2]
+    trajE, velE = reverseHuberLoss(error)
+    finalFit = -(trajE) + Bonus - timeBonus
+    finalFit3 = -(velE) + Bonus - timeBonus
+    print("TRAJECTORY ERROR: ", trajE)
+    print("VELOCITY ERROR: ", velE)
+    print("TRAJ FIT: ", finalFit)
+    print("VEL FIT: ", finalFit3)
+    return [finalFit,finalFit3,finalFit2]
 
 # This function acts as a total error calculation from the array that is passed in
 # sums all of trajectory reward and velocity reward, which is a pre-squared error value
@@ -100,6 +124,29 @@ def findMeanError(error):
     trajE = trajE / len(error)
     velE = velE / len(error)
     return trajE, velE
+
+def reverseHuberLoss(error):
+    trajE = 0
+    velE = 0
+    sanityT = 0
+    sanityV = 0
+    for e in error:
+        t = e[1]
+        v = e[0]
+        sanityT = sanityT + t
+        sanityV = sanityV + v
+        if abs(t) < 1:
+            trajE = trajE + t
+        else:
+            trajE = trajE + (0.5*(t**2))
+        if abs(v) < 1:
+            velE = velE + v
+        else:
+            velE = velE + (0.5*(v**2))
+    print("SANITY TRAJ: ", sanityT)
+    print("SANITY VEL: ", sanityV)
+    return trajE, velE
+
 
 # Limiter Function. Acts to calculate the limiter and save it
 # Param:
@@ -171,11 +218,10 @@ def run_simulator(PIDInput):
 
     spawn_actor(world)
     my_custom_waypoints = waypoint_gen(world, world.get_map())
-    counter = 0
-    for points in my_custom_waypoints:
-        print(counter)
-        print(points)
-        counter = counter + 1
+    #for points in my_custom_waypoints:
+    #    print(counter)
+    #    print(points)
+    #    counter = counter + 1
 
     # Vehicle properties setup
     # print(actor_list)
@@ -219,6 +265,7 @@ def run_simulator(PIDInput):
     waypoint = get_next_waypoint(world, vehicle, my_custom_waypoints, PIDInput[6])
     stamp1 = world.get_snapshot()
     rFlag = False
+    cInt = 0
     while counter < 480:
         # Get simulation time
         frame = world.get_snapshot().frame
@@ -234,16 +281,18 @@ def run_simulator(PIDInput):
         # Else run the loop
         if waypoint is None:
             print("faulty_waypoint")
-            ranger = int(counter * 10)
-            for count in range(ranger,7500,1):
-                rewardsArr.append([10000,10000])
-            counter = 750 
+            #ranger = int(counter * 10)
+            #for count in range(ranger,7500,1):
+            #    rewardsArr.append([10000,10000])
+            cInt = 1
+            counter = 480 
         elif waypoint_last_5_check(waypoint, my_custom_waypoints):
-            print("Last 5?")
-            ranger = int(counter * 10)
-            for count in range(ranger,7500,1):
-                rewardsArr.append([0,0])
-            counter = 750
+            print("Last 21?")
+            #ranger = int(counter * 10)
+            #for count in range(ranger,7500,1):
+            #    rewardsArr.append([0,0])
+            counter = 480
+            cInt = 2
         else:
             world.debug.draw_point(waypoint.transform.location, life_time=5)
 
@@ -299,7 +348,7 @@ def run_simulator(PIDInput):
             target_velocity = adhere
             # Place Tweaks 08/10/24
             #limit = limiters[CurrentZone]
-            limit = .128
+            limit = .064
             if(target_velocity >= old_target):
                 if (target_velocity - old_target) > limit:
                     target_velocity = old_target + limit
@@ -313,14 +362,15 @@ def run_simulator(PIDInput):
             # Calculate the reward values (error)
             # 6/18/24 NOTE - ADD VELOCITY REWARD TO TRAJECTORY REWARD INTO ONE MAYBE LATER, BUT FIRST TRY FULL POSITIONAL CHECK.
             if rFlag == False and CurrentZone > -1 and counter > 1:
+                print("FLIPPING AT COUNTER: ", counter)
                 rFlag = True
                 stamp2 = world.get_snapshot()
             if CurrentZone > -1 and counter > 1:
                 velocity_reward, trajectory_reward = calculate_reward(current_x, current_y, current_throttle, current_brake, current_steering, current_velocity, track_data)
-                conglom = 0.50*velocity_reward
-                conglom2 = 0.50*trajectory_reward
-                conglom3 = conglom + conglom2
-                rewardsArr.append([velocity_reward, conglom3])
+                #conglom = 0.50*velocity_reward
+                #conglom2 = 0.50*trajectory_reward
+                #conglom3 = conglom + conglom2
+                rewardsArr.append([velocity_reward, trajectory_reward])
 
             # Calculate target throttle and steer values
             # Throttle may be negative. If target throttle is < 0, then we are braking.
@@ -352,18 +402,20 @@ def run_simulator(PIDInput):
             # If a collision is detected, apply worst reward and end
             global collFlag
             if collFlag is True:
-                ranger = int(counter * 10)
-                for count in range(ranger,7500,1):
-                    rewardsArr.append([999,999])
-                counter = 750
+                #ranger = int(counter * 10)
+                #for count in range(ranger,7500,1):
+                #    rewardsArr.append([999,999])
+                counter = 480
+                cInt = 3
                 collFlag = False
             else:
                 snap = world.get_snapshot()
                 counter = round(counter + 0.1,2)
     #Cook that guy if he doesn't progress
     # Might need apply this regardless and time improve the reward. Like. A static negative for not reaching it... but a better negative if they do that improves with... TIME.
+    timeBonus = 0
     if rFlag == False:
-        rewardsArr.append([9000000000,90000000000])
+        timeBonus = 10000
     else:
         timestamp1 = stamp1.timestamp.elapsed_seconds
         print(timestamp1)
@@ -372,15 +424,14 @@ def run_simulator(PIDInput):
         time = timestamp2-timestamp1
         print(time)
         multFact = time/60
-        multRew = multFact * 1000000
-        rewardsArr.append([multRew,multRew])
+        timeBonus = multFact * 1000
         # We choose 143 based on manual testing of average times, which appear to range from 139-143.
         # This will create a simple formula: time/143 = multFact
         # Reward will be 10000000 as an arbitrarily large number, but one that IS lesser than the horrible reward above
         # multFact * Reward (which should always be less than the GIGA reward above) = new Reward
         # Faster times getting to the *ZONE 1* will be rewarded accordingly. 
 
-    return rewardsArr
+    return rewardsArr, cInt, timeBonus
 
 
 
@@ -868,10 +919,10 @@ def load_gains(participant_id):
 #   lastSol - the best chosen solution
 # Return:
 #   No return
-def update_pids_json(participant_id, solution, lastFit, lastSol,pareto_fronts):
+def update_pids_json(participant_id, solution, Fitness, pareto_fronts):
     filename = 'JSONBASE/' + participant_id + '_GAgains.json'
-    lastFit_list = lastFit.tolist() if isinstance(lastFit, np.ndarray) else lastFit
-    lastSol_list = lastSol.tolist() if isinstance(lastSol, np.ndarray) else lastSol
+    #lastFit_list = lastFit.tolist() if isinstance(lastFit, np.ndarray) else lastFit
+    #lastSol_list = lastSol.tolist() if isinstance(lastSol, np.ndarray) else lastSol
     pareto_fronts_fix = remove_numpy_arrays(pareto_fronts)
     print(pareto_fronts_fix)
     # New gains structure from the solution
@@ -880,14 +931,44 @@ def update_pids_json(participant_id, solution, lastFit, lastSol,pareto_fronts):
         'steering': {'kp': solution[3], 'ki': solution[4], 'kd': solution[5]},
         'safety_buffer' : solution[6],
         'speed_set' : {'s1': solution[7],'s2': solution[8],'s3': solution[9],'s4': solution[10],'s5': solution[11],'s6': solution[12],'s7': solution[13],'s8': solution[14]},
-        'lastFit': lastFit_list,
-        'lastSol': lastSol_list,
+        #'lastFit': lastFit_list,
+        #'lastSol': lastSol_list,
+        'fitness_values' : {'Position_Error':Fitness[0],'Velocity_Error':Fitness[1],'Regularization':Fitness[2]},
         'pareto_front':pareto_fronts_fix,
     }
     # Update the JSON file with new gains
     with open(filename, 'w') as f:
         json.dump(new_gains, f)
     print("PID gains updated in JSON file.")
+
+# This function takes in the id, the greatest fitness value, and the number of iterations
+# and updates a JSON file 
+def lineage_json(participant_id,fitness,iteration):
+    filename = 'JSONLINEAGE/'+participant_id + '_Lineage.json'
+    try:
+        # Load the gains from a JSON file
+        with open(filename, 'r') as f:
+            lineage = json.load(f)
+        print('Lineage Found.')
+        lastIter = list(lineage.keys())[-1]
+        lastIter = int(lastIter)
+        newIter = lastIter+iteration
+        newLineage = {
+            str(newIter) : {'Trajectory_Error' : fitness[0], 'Velocity_Error' : fitness[1], 'Regularization' : fitness[2]},}
+        lineage.update(newLineage)
+        with open(filename, 'w') as f2:
+            json.dump(lineage, f2)
+        print('Lineage Updated.')
+    except FileNotFoundError:
+        print('No Lineage file found. Creating new Lineage.')
+        lineageDump = {
+            str(iteration) : {'Trajectory_Error' : fitness[0], 'Velocity_Error' : fitness[1], 'Regularization' : fitness[2]},}
+        with open(filename, 'w') as f:
+            json.dump(lineageDump, f)
+        print('New Lineage Created.')
+
+
+
 
 # For Sanity, this reward calculates less of a reward and more of an error. 
 # Adjusted distance to be a positive value, since the error will be squared anyway, and distance is positive value
@@ -1069,11 +1150,11 @@ if __name__ == "__main__":
     participant_filename = os.path.basename(participant_path)
     participant_id = os.path.splitext(participant_filename)[0]
     track_data = traj_loader(participant_path)
+    numGener = 10
     try:
         if args.New:
             # Grab initial values for the participant
             throttle_brake_gains, steering_gains, safety_buffer, sp_st = load_gains(args.ID)
-            numGener = 10
             numMat = 4
             initPop = np.random.rand(10,15)
             for x in range(-8,0):
@@ -1082,7 +1163,7 @@ if __name__ == "__main__":
                 initPop[:,x] = rounded 
             initPop[0] = np.array([throttle_brake_gains.kp, throttle_brake_gains.ki, throttle_brake_gains.kd,
                        steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, sp_st['s1'], sp_st['s2'], sp_st['s3'], sp_st['s4'], sp_st['s5'], sp_st['s6'], sp_st['s7'], sp_st['s8']])
-            geneSpace = [{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},{'low': -10, 'high': 50, 'step': 1},]
+            geneSpace = [{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},]
             parenSel = "nsga2"
             ga_instance = pg.GA(num_generations = numGener,
                                 initial_population=initPop,
@@ -1107,7 +1188,8 @@ if __name__ == "__main__":
             print(f"Parameters of the best solution : {solution}")
             print(f"Fitness value of the best solution = {solution_fitness}")
             writepath = "participantPIDS/"+args.ID+"GAPIDS.txt"
-            update_pids_json(args.ID, solution, lastFit, lastSol,ga_instance.pareto_fronts) # Update the JSON file with the new gains
+            update_pids_json(args.ID, solution, solution_fitness,ga_instance.pareto_fronts) # Update the JSON file with the new gains
+            lineage_json(args.ID,solution_fitness,numGener)
             with open(writepath, "a") as theFile: # Writing to participantPIDS txt file
                 for PID in solution:
                     print(type(PID))
@@ -1127,7 +1209,8 @@ if __name__ == "__main__":
             print(f"Parameters of the best solution : {solution}")
             print(f"Fitness value of the best solution = {solution_fitness}")
             writepath = "participantPIDS/"+args.ID+"GAPIDS.txt"
-            update_pids_json(args.ID, solution, lastFit, lastSol,load_instance.pareto_fronts) # Update the JSON file with the new gains
+            update_pids_json(args.ID, solution, solution_fitness,load_instance.pareto_fronts) # Update the JSON file with the new gains
+            lineage_json(args.ID,solution_fitness,numGener)
             with open(writepath, "a") as theFile: # Writing to participantPIDS txt file
                 for PID in solution:
                     theFile.write(str(PID) + " ")
