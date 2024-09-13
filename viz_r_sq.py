@@ -8,9 +8,9 @@ import matplotlib.patches as patches
 import matplotlib.cm as cm
 
 ## SET YOUR PARTICIPANT ID HERE
-# participant_num = 'BJ7377'
+participant_num = 'BJ7377'
 # participant_num = 'AR4924'
-participant_num = 'AM5287'
+# participant_num = 'AM5287'
 
 def calculate_velocity(df):
     df['dt'] = df['t'].diff()
@@ -32,6 +32,19 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
     sim_df = sim_df.sort_values(by='TimeStep')
     human_df = human_df.apply(pd.to_numeric, errors='coerce')
     human_df = human_df[(human_df[['x', 'y']] != 0).all(axis=1)]
+
+   # Get the last position from the simulation data
+    last_sim_pos = sim_df[['PosX', 'PosY']].iloc[-1].values
+
+    # Calculate the Euclidean distance of each human trajectory point from the last sim point
+    human_distances = np.sqrt((human_df['x'] - last_sim_pos[0])**2 + (human_df['y'] - last_sim_pos[1])**2)
+
+    # Truncate human_df where the distance starts increasing significantly beyond the simulation's last point
+    cutoff_idx = human_distances.idxmin()
+
+    # Trim the human trajectory to this cutoff index
+    human_df = human_df.iloc[:cutoff_idx + 1].reset_index(drop=True)
+
     human_df = human_df.iloc[1:]
     sim_df = sim_df.iloc[1:]
     
@@ -52,11 +65,6 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
     plt.figtext(0.9, 0.01, f"R^2 (position): {r2_position}", wrap=True, horizontalalignment='center', fontsize=12)
     landmarks_df = pd.read_csv('assets/plot_landmarks.csv')
 
-    ## School Zone Detection (Deprecated)
-    # school_zone_start = (0.01 * landmarks_df[landmarks_df['property'] == 'SZ']['x'].values[0], -60)
-    # school_zone_end = (0.01 * landmarks_df[landmarks_df['property'] == 'SZ']['x'].values[1], -40)
-    # school_zone_indices = sim_df.apply(lambda row: is_within_zone(row['PosX'], row['PosY'], school_zone_start, school_zone_end), axis=1)
-
     # Uncomment if you want velocities in mph
     sim_velocities = sim_velocities * 2.23694
     nearest_human_velocities = nearest_human_velocities * 2.23694
@@ -64,23 +72,65 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
     # Calculate percentage of track completed
     track_percentage = np.linspace(0, 100, len(sim_df))
 
+    # Find the range of track_percentage corresponding to zones
+    start_zone = zone_df.iloc[0]  # First zone (Zone A)
+    end_zone = zone_df.iloc[-1]   # Last zone
+
+    start_zone_indices = sim_df.apply(lambda row: is_within_zone(row['PosX'], row['PosY'], (start_zone['x1'], start_zone['y1']), (start_zone['x2'], start_zone['y2'])), axis=1)
+    end_zone_indices = sim_df.apply(lambda row: is_within_zone(row['PosX'], row['PosY'], (end_zone['x1'], end_zone['y1']), (end_zone['x2'], end_zone['y2'])), axis=1)
+
+    # Calculate the start and end percentage
+    first_zone_idx = np.where(start_zone_indices)[0][0]
+
+    # Check if any points were found in the end_zone
+    end_zone_idx_array = np.where(end_zone_indices)[0]
+
+    # If end_zone has points, use the last one; otherwise, set a default (e.g., the last point of sim_df)
+    if len(end_zone_idx_array) > 0:
+        last_zone_idx = end_zone_idx_array[-1]
+    else:
+        last_zone_idx = len(sim_df) - 1  # Set to the last point in sim_df if no points in end_zone
+
+    start_percentage = track_percentage[first_zone_idx]
+    end_percentage = track_percentage[last_zone_idx]
+
     plt.subplot(1, 2, 1)
     plt.plot(track_percentage, sim_velocities, 'b-', label='Simulation', linewidth=1)
     plt.plot(track_percentage, nearest_human_velocities, 'r--', label='Human', linewidth=1)
 
     # Fix y-axis range and add alphabet labels at a fixed y-position
-    plt.ylim(0, 90)
+    plt.ylim(0, 120)
+    plt.xlim(start_percentage, end_percentage)  # Limit x-axis to start and end zone
+
     zone_labels = list("ABCDEFGH")  # Labels for zones
-    y_position = 85  # Fixed y-position for the zone labels
+
+    zone_label_y = 110  # Fixed y-position for the zone labels
+
     for i, (_, zone) in enumerate(zone_df.iterrows()):
-        color = 'lightgrey' if i % 2 == 0 else 'white'  # Alternate grey and white for zones
+        color = 'grey' if i % 2 == 0 else 'white'  # Alternate grey and white for zones
         zone_indices = sim_df.apply(lambda row: is_within_zone(row['PosX'], row['PosY'], (zone['x1'], zone['y1']), (zone['x2'], zone['y2'])), axis=1)
         in_zone_indices = [idx for idx, in_zone in enumerate(zone_indices) if in_zone]
 
         if in_zone_indices:
             plt.axvspan(track_percentage[in_zone_indices[0]], track_percentage[in_zone_indices[-1]], color=color, alpha=0.3)
             mid_idx = in_zone_indices[len(in_zone_indices) // 2]
-            plt.text(track_percentage[mid_idx], y_position, zone_labels[i], fontsize=14, color='black', ha='center')
+            plt.text(track_percentage[mid_idx], zone_label_y, zone_labels[i], fontsize=14, color='black', ha='center')
+
+
+    # Convert sim_velocities and track_percentage to numpy arrays for safer indexing
+    sim_velocities = np.array(sim_velocities)
+    nearest_human_velocities = np.array(nearest_human_velocities)
+    track_percentage = np.array(track_percentage)
+
+    # Calculate interval for placing 10 triangles
+    interval = max(1, len(sim_df) // 10)  # Ensure interval is at least 1 to avoid division by zero
+
+    # Get 10 evenly spaced triangle indices within the bounds of the data
+    triangle_indices = np.linspace(0, len(sim_df) - 1, num=10, dtype=int)
+
+    # Add triangles to the velocity plots
+    plt.plot(track_percentage[triangle_indices], sim_velocities[triangle_indices], 'v', color='blue', label='Simulation Markers', markersize=8)
+    plt.plot(track_percentage[triangle_indices], nearest_human_velocities[triangle_indices], 'v', color='red', label='Human Markers', markersize=8)
 
     plt.xlabel('Track Completed (%)')
     plt.ylabel('Velocity (mph)')
@@ -95,11 +145,8 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
     for i, label in enumerate(labels_assets):
         plt.text(-0.01*landmarks_df['x'][i], 0.01*landmarks_df['y'][i], label, fontsize=9, color='black')
 
-    # Define a list of colors or use a colormap
-    # colors = cm.get_cmap('tab10', len(zone_df))
-
     for i, (_, zone) in enumerate(zone_df.iterrows()):
-        color = 'lightgrey' if i % 2 == 0 else 'white'  # Match the shading to velocity comparison
+        color = 'grey' if i % 2 == 0 else 'white'  # Match the shading to velocity comparison
         rect = patches.Rectangle((-zone['x1'], zone['y1']),
                                 -(zone['x2'] - zone['x1']), (zone['y2'] - zone['y1']),
                                 linewidth=1, edgecolor='black', facecolor=color, alpha=0.3)
