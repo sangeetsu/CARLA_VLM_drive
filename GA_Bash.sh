@@ -4,7 +4,7 @@
 # server``
 
 # Run first instance without an argument
-file_path="participant_data/CE3693final.csv"
+file_path="participant_data/BJ7377final.csv"
 # Extract filename from the file path
 filename=$(basename "$file_path")
 # Retrieve ID
