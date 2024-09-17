@@ -39,9 +39,10 @@ collFlag = False
 def waypoint_last_5_check(waypoint,waylist):
     #21 is for last stop point
     #219 is for Zone 3 as 182 is the waypoint, 402 total points, 220 points back... need to go one closer
-    wayselect = waylist[-21:]
+    wayselect = waylist[-24:]
     for wp in wayselect:
         if waypoint is wp:
+            print(wp)
             return True
     return False
 
@@ -65,13 +66,11 @@ def waypoint_last_5_check(waypoint,waylist):
 #   fitness2 - 1/MSE of velocity error
 def fitness_func(ga_instance, solution, solution_idx):
     print("Current Solution: ",solution)
-    error, complete, timeBonus = run_simulator(solution)
+    error, complete, timeBonus, ZoneFlags = run_simulator(solution)
     # This section correlates as follows: 0 for incomplete, 1 for faulty waypoint, 2 for complete, 3 for crash
     # Crashing is worst case. Faulty Waypoint is goofy second worse case. Incomplete could mean a lot, so lower penalty
     # Complete is best case. Do NOT penalize completion, but still evaluate the errors on their own merit. 
     # Completion cases should compete with themselves for best completion errors. 
-    print("THESE ARE THE ERROR VALUES:")
-    print(error)
     Bonus = 0
     if complete == 0:
         Bonus = -5000
@@ -102,7 +101,11 @@ def fitness_func(ga_instance, solution, solution_idx):
     print("VELOCITY ERROR: ", velE)
     print("TRAJ FIT: ", finalFit)
     print("VEL FIT: ", finalFit3)
-    return [finalFit,finalFit3,finalFit2]
+    print("NORMALIZATION: ",finalFit2)
+    # Check the zone sum
+    ZoneFit = ZoneFlags.count(True)
+    print("ZONE COUNT: ", ZoneFit)
+    return [finalFit,finalFit3, ZoneFit]
 
 # This function acts as a total error calculation from the array that is passed in
 # sums all of trajectory reward and velocity reward, which is a pre-squared error value
@@ -143,8 +146,6 @@ def reverseHuberLoss(error):
             velE = velE + v
         else:
             velE = velE + (0.5*(v**2))
-    print("SANITY TRAJ: ", sanityT)
-    print("SANITY VEL: ", sanityV)
     return trajE, velE
 
 
@@ -253,6 +254,7 @@ def run_simulator(PIDInput):
 
     # Implementing Flag Zones for the space
     VelZones = [PIDInput[7],PIDInput[8],PIDInput[9],PIDInput[10],PIDInput[11],PIDInput[12],PIDInput[13],PIDInput[14]]
+    ZoneFlags = [False, False, False, False, False, False, False, False]
     CurrentZone = -1
     zones = pd.read_csv('assets/zone_list.csv')
     #limiters = calculateLimiters(track_data,zones)
@@ -319,6 +321,7 @@ def run_simulator(PIDInput):
                 if current_x > xBound[0] and current_x <= xBound[1]:
                     if current_y > yBound[0] and current_y <= yBound[1]:
                         CurrentZone = x
+                        ZoneFlags[x] = True
                         break
                     else:
                         CurrentZone = -1
@@ -431,7 +434,7 @@ def run_simulator(PIDInput):
         # multFact * Reward (which should always be less than the GIGA reward above) = new Reward
         # Faster times getting to the *ZONE 1* will be rewarded accordingly. 
 
-    return rewardsArr, cInt, timeBonus
+    return rewardsArr, cInt, timeBonus, ZoneFlags
 
 
 
@@ -461,10 +464,10 @@ def get_curvy_waypoints(waypoints):
         x2 = waypoints[i+1].transform.location.x
         y2 = waypoints[i+1].transform.location.y
         if (abs(x1 - x2) > 1) and (abs(y1 - y2) > 1):
-            print("x1: " + str(x1) + "  x2: " + str(x2))
-            print(abs(x1 - x2))
-            print("y1: " + str(y1) + "  y2: " + str(y2))
-            print(abs(y1 - y2))
+            #print("x1: " + str(x1) + "  x2: " + str(x2))
+            #print(abs(x1 - x2))
+            #print("y1: " + str(y1) + "  y2: " + str(y2))
+            #print(abs(y1 - y2))
             curvy_waypoints.append(waypoints[i])
       
     # To make the path reconnect to the starting location
@@ -933,7 +936,7 @@ def update_pids_json(participant_id, solution, Fitness, pareto_fronts):
         'speed_set' : {'s1': solution[7],'s2': solution[8],'s3': solution[9],'s4': solution[10],'s5': solution[11],'s6': solution[12],'s7': solution[13],'s8': solution[14]},
         #'lastFit': lastFit_list,
         #'lastSol': lastSol_list,
-        'fitness_values' : {'Position_Error':Fitness[0],'Velocity_Error':Fitness[1],'Regularization':Fitness[2]},
+        'fitness_values' : {'Position_Error':Fitness[0],'Velocity_Error':Fitness[1]},
         'pareto_front':pareto_fronts_fix,
     }
     # Update the JSON file with new gains
@@ -954,7 +957,7 @@ def lineage_json(participant_id,fitness,iteration):
         lastIter = int(lastIter)
         newIter = lastIter+iteration
         newLineage = {
-            str(newIter) : {'Trajectory_Error' : fitness[0], 'Velocity_Error' : fitness[1], 'Regularization' : fitness[2]},}
+            str(newIter) : {'Trajectory_Error' : fitness[0], 'Velocity_Error' : fitness[1]},}
         lineage.update(newLineage)
         with open(filename, 'w') as f2:
             json.dump(lineage, f2)
@@ -962,7 +965,7 @@ def lineage_json(participant_id,fitness,iteration):
     except FileNotFoundError:
         print('No Lineage file found. Creating new Lineage.')
         lineageDump = {
-            str(iteration) : {'Trajectory_Error' : fitness[0], 'Velocity_Error' : fitness[1], 'Regularization' : fitness[2]},}
+            str(iteration) : {'Trajectory_Error' : fitness[0], 'Velocity_Error' : fitness[1]},}
         with open(filename, 'w') as f:
             json.dump(lineageDump, f)
         print('New Lineage Created.')
@@ -1163,7 +1166,7 @@ if __name__ == "__main__":
                 initPop[:,x] = rounded 
             initPop[0] = np.array([throttle_brake_gains.kp, throttle_brake_gains.ki, throttle_brake_gains.kd,
                        steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, sp_st['s1'], sp_st['s2'], sp_st['s3'], sp_st['s4'], sp_st['s5'], sp_st['s6'], sp_st['s7'], sp_st['s8']])
-            geneSpace = [{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},]
+            geneSpace = [{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},]
             parenSel = "nsga2"
             ga_instance = pg.GA(num_generations = numGener,
                                 initial_population=initPop,
@@ -1177,40 +1180,56 @@ if __name__ == "__main__":
                                 random_mutation_max_val=0.25,
                                 parent_selection_type = parenSel,
                                 gene_space = geneSpace,
+                                save_best_solutions=True,
                                 )
             ga_instance.run()
             filename = "participantGA/"+args.ID
             ga_instance.save(filename)
-            solution, solution_fitness, solution_idx = ga_instance.best_solution(ga_instance.last_generation_fitness)
-            lastFit = ga_instance.last_generation_fitness
-            lastSol = ga_instance.last_generation_parents
-            print("PARETO FRONTIER?: ", ga_instance.pareto_fronts)
-            print(f"Parameters of the best solution : {solution}")
-            print(f"Fitness value of the best solution = {solution_fitness}")
+            #solution, solution_fitness, solution_idx = ga_instance.best_solution(ga_instance.last_generation_fitness)
+            #lastFit = ga_instance.last_generation_fitness
+            #lastSol = ga_instance.last_generation_parents
+            #print("PARETO FRONTIER?: ", ga_instance.pareto_fronts)
+            #print(f"Parameters of the best solution : {solution}")
+            #print(f"Fitness value of the best solution = {solution_fitness}")
             writepath = "participantPIDS/"+args.ID+"GAPIDS.txt"
-            update_pids_json(args.ID, solution, solution_fitness,ga_instance.pareto_fronts) # Update the JSON file with the new gains
-            lineage_json(args.ID,solution_fitness,numGener)
+            fitness = ga_instance.best_solutions_fitness[ga_instance.best_solution_generation] 
+            solution = ga_instance.best_solutions[ga_instance.best_solution_generation]
+            fitness = fitness.tolist()
+            update_pids_json(args.ID,solution, fitness, ga_instance.pareto_fronts) # Update the JSON file with the new gains
+            lineage_json(args.ID,fitness,numGener)
+            print("THIS IS THE DIVIDER")
+            print(ga_instance.best_solutions_fitness)
+            print(ga_instance.best_solution_generation)
+            print(ga_instance.best_solutions)
             with open(writepath, "a") as theFile: # Writing to participantPIDS txt file
                 for PID in solution:
-                    print(type(PID))
                     theFile.write(str(PID) + " ")
                 theFile.write("\n")
         else:
             loadname = "participantGA/"+args.ID
             load_instance = pg.load(loadname)
             load_instance.fitness_func = fitness_func
+            load_instance.save_best_solutions = True
+            load_instance.save_solutions = True
             load_instance.run()
-            solution, solution_fitness, solution_idx = load_instance.best_solution(load_instance.last_generation_fitness)
+            #solution, solution_fitness, solution_idx = load_instance.best_solution(load_instance.last_generation_fitness)
             filename = "participantGA/"+args.ID
             load_instance.save(filename)
-            lastFit = load_instance.last_generation_fitness
-            lastSol = load_instance.last_generation_parents
-            print("PARETO FRONTIER?: ", load_instance.pareto_fronts)
-            print(f"Parameters of the best solution : {solution}")
-            print(f"Fitness value of the best solution = {solution_fitness}")
+            #lastFit = load_instance.last_generation_fitness
+            #lastSol = load_instance.last_generation_parents
+            #print("PARETO FRONTIER?: ", load_instance.pareto_fronts)
+            #print(f"Parameters of the best solution : {solution}")
+            #print(f"Fitness value of the best solution = {solution_fitness}")
             writepath = "participantPIDS/"+args.ID+"GAPIDS.txt"
-            update_pids_json(args.ID, solution, solution_fitness,load_instance.pareto_fronts) # Update the JSON file with the new gains
-            lineage_json(args.ID,solution_fitness,numGener)
+            fitness = load_instance.best_solutions_fitness[load_instance.best_solution_generation] 
+            solution = load_instance.best_solutions[load_instance.best_solution_generation]
+            fitness = fitness.tolist()
+            update_pids_json(args.ID,solution, fitness, load_instance.pareto_fronts) # Update the JSON file with the new gains
+            lineage_json(args.ID,fitness,numGener)
+            print("BELOW IS THE NEW DATA STUFF.")
+            print(load_instance.best_solutions_fitness)
+            print(load_instance.best_solution_generation)
+            print(load_instance.best_solutions)
             with open(writepath, "a") as theFile: # Writing to participantPIDS txt file
                 for PID in solution:
                     theFile.write(str(PID) + " ")

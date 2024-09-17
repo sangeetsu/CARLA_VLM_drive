@@ -181,7 +181,7 @@ class PIDLongitudinalController():
             _ie = 0.0
 
         finalVal = (self._k_p * error) - (self._k_d * _me) + (self._k_i * _ie) 
-        print("FINAL VAL:", finalVal)
+        #print("FINAL VAL:", finalVal)
         clamping = np.clip(finalVal, -self._max_brake, self._max_throttle)
         # RIGHT HERE. THIS IS IT. WE can implement a MAXIMUM. ALLOWED. THROTTLE CHANGE. So if the last value is 0
         # and the current clamped value is MAX... then reduce that BIATCH.
@@ -199,7 +199,7 @@ class PIDLongitudinalController():
         clamping = np.clip(clamping, -self._max_brake, self._max_throttle)
         """
         self._output_buffer.append(clamping)
-        print(self._output_buffer)
+        #print(self._output_buffer)
         """
         aFlag = False
         if len(self._output_buffer) < 10:
