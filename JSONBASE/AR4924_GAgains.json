@@ -1,1 +1,0 @@
-{"throttle_brake": {"kp": 0.5, "ki": 0.1, "kd": 0.1}, "steering": {"kp": 0.5, "ki": 0.1, "kd": 0.1}, "safety_buffer": 0.8, "speed_set": {"s1": 15, "s2": 15, "s3": 15, "s4": 15, "s5": 15, "s6": 15, "s7": 15, "s8": 15}}

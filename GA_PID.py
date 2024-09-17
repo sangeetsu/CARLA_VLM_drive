@@ -903,7 +903,7 @@ def load_gains(participant_id):
         gains = {
             'throttle_brake': {'kp': 0.5, 'ki': 0.1, 'kd': 0.1},
             'steering': {'kp': 0.5, 'ki': 0.1, 'kd': 0.1},
-            'safety_buffer' : 0.8,
+            'safety_buffer' : 0.5,
             'speed_set' :  {'s1': 15,'s2': 15,'s3': 15,'s4': 15,'s5': 15,'s6': 15,'s7': 15,'s8': 15},
         }
         # Create the file with default gains
@@ -1166,7 +1166,7 @@ if __name__ == "__main__":
                 initPop[:,x] = rounded 
             initPop[0] = np.array([throttle_brake_gains.kp, throttle_brake_gains.ki, throttle_brake_gains.kd,
                        steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, sp_st['s1'], sp_st['s2'], sp_st['s3'], sp_st['s4'], sp_st['s5'], sp_st['s6'], sp_st['s7'], sp_st['s8']])
-            geneSpace = [{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},]
+            geneSpace = [{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 5},{'low': 0.001, 'high': 0.6},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},{'low': -10, 'high': 30, 'step': 1},]
             parenSel = "nsga2"
             ga_instance = pg.GA(num_generations = numGener,
                                 initial_population=initPop,
