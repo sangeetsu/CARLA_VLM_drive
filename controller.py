@@ -179,7 +179,7 @@ class PIDLongitudinalController():
         finalVal = (self._k_p * error) - (self._k_d * _me) + (self._k_i * _ie) 
         clamping = np.clip(finalVal, -1.0, 1.0)
         self._output_buffer.append(clamping)
-        print(self._output_buffer)
+        # print(self._output_buffer)
         aFlag = False
         if len(self._output_buffer) < 10:
             self._derivative = True  # A deque with less than 2 elements trivially has alternating signs
