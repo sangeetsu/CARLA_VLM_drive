@@ -146,10 +146,24 @@ class BLIPEmbedder:
         Returns:
             Dictionary containing the loaded embeddings
         """
-        with open(filepath, 'rb') as f:
-            embeddings_dict = pickle.load(f)
-        print(f"Embeddings loaded from {filepath}")
-        return embeddings_dict
+        try:
+            with open(filepath, 'rb') as f:
+                embeddings_dict = pickle.load(f)
+            print(f"Embeddings loaded from {filepath}")
+            return embeddings_dict
+        except OSError as e:
+            if e.errno == 24:  # Too many open files
+                print(f"Too many open files error. Trying to garbage collect and retry...")
+                import gc
+                gc.collect()  # Force garbage collection
+                # Try again after cleanup
+                with open(filepath, 'rb') as f:
+                    embeddings_dict = pickle.load(f)
+                print(f"Successfully loaded embeddings after garbage collection")
+                return embeddings_dict
+            else:
+                # Re-raise if it's a different error
+                raise
     
     def compute_similarity(self, embedding1: np.ndarray, embedding2: np.ndarray) -> float:
         """

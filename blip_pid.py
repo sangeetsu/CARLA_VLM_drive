@@ -22,6 +22,12 @@ from PIL import Image
 from blipper import BLIPEmbedder
 import os
 
+#Increase system file limit
+import resource
+soft, hard = resource.getrlimit(resource.RLIMIT_NOFILE)
+resource.setrlimit(resource.RLIMIT_NOFILE, (hard, hard))
+print(f"File limit increased from {soft} to {hard}")
+
 #Numpy precision setup
 np.set_printoptions(precision=25, suppress=True)
 
@@ -142,6 +148,9 @@ def fitness_func(ga_instance, solution, solution_idx):
     finalFit = (1/trajE) * (trajWeight + visualWeight * blip_similarity) 
     finalFit2 = 1/velE
     print("Trajectory Error: ", trajE, " Velocity Error: ", velE, " BLIP2 Similarity: ", blip_similarity)
+    
+    clear_resources()
+    
     return [finalFit, finalFit2]
 
 # This function acts as a total error calculation from the array that is passed in
@@ -1233,3 +1242,25 @@ if __name__ == "__main__":
                 pass
         actor_list.clear()
         print('\ndone.')
+
+def clear_resources():
+    """Clean up resources to prevent too many open files"""
+    global actor_list, blip_embedder, frame_buffer, frame_timestamps
+    
+    # Clear actor list
+    for actor in actor_list:
+        try:
+            actor.destroy()
+        except Exception as e:
+            print(f"Error destroying actor: {e}")
+    actor_list.clear()
+    
+    # Clear frame buffers
+    frame_buffer.clear()
+    frame_timestamps.clear()
+    
+    # Force garbage collection
+    import gc
+    gc.collect()
+    
+    print("Resources cleared")
