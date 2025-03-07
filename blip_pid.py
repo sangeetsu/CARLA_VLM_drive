@@ -91,7 +91,7 @@ def fitness_func(ga_instance, solution, solution_idx):
     trajE, velE = findMeanError(error)
     
     # Load reference embeddings if available
-    reference_embeddings_path = f"{embedding_save_path}/reference_{participant_id}_blip_embeddings.pkl"
+    reference_embeddings_path = f"{embedding_save_path}/reference_{participant_id.replace('final', '')}_blip_embeddings.pkl"
     blip_similarity = 1.0  # Default value if we can't calculate similarity
     
     # Debug information
@@ -649,11 +649,14 @@ def generate_reference_embeddings(participant_id):
     """
     global blip_embedder
     
+    # Clean the participant_id by removing 'final' suffix if present
+    clean_id = participant_id.replace('final', '')
+    
     # Import the necessary functions from test_ref_embed.py
     import test_ref_embed
     
     # Check if reference embeddings already exist
-    reference_embeddings_path = f"{embedding_save_path}/reference_{participant_id}_blip_embeddings.pkl"
+    reference_embeddings_path = f"{embedding_save_path}/reference_{clean_id}_blip_embeddings.pkl"
     if os.path.exists(reference_embeddings_path):
         print(f"Reference embeddings already exist at {reference_embeddings_path}. Loading...")
         # Initialize embedder if not done already, so it can be used later
@@ -663,20 +666,20 @@ def generate_reference_embeddings(participant_id):
         return blip_embedder.load_embeddings(reference_embeddings_path)
     
     # Call the test_reference_embeddings function from test_ref_embed.py
-    print(f"Generating reference embeddings for participant {participant_id} using test_ref_embed approach...")
+    print(f"Generating reference embeddings for participant {clean_id} using test_ref_embed approach...")
     
-    # Set debug=False, force=True to ensure generation, save_frames=True to save the frames
-    test_ref_embed.test_reference_embeddings(participant_id, debug=False, force=True, save_frames=True)
+    # Pass the clean ID to test_ref_embed
+    test_ref_embed.test_reference_embeddings(clean_id, debug=False, force=True, save_frames=True)
     
     # After generating embeddings, load and return them
     if os.path.exists(reference_embeddings_path):
         if blip_embedder is None:
             blip_embedder = BLIPEmbedder()
         embeddings = blip_embedder.load_embeddings(reference_embeddings_path)
-        print(f"Successfully loaded reference embeddings for {participant_id}")
+        print(f"Successfully loaded reference embeddings for {clean_id}")
         return embeddings
     else:
-        print(f"Warning: Failed to generate reference embeddings for {participant_id}")
+        print(f"Warning: Failed to generate reference embeddings for {clean_id}")
         return {}
 
 # Constructs and attaches a lidar sensor to the car
@@ -1151,7 +1154,8 @@ if __name__ == "__main__":
     try:
         if args.New:
             # Generate reference embeddings if needed
-            reference_embeddings_path = f"{embedding_save_path}/reference_{args.ID}_blip_embeddings.pkl"
+            clean_id = args.ID.replace('final', '')
+            reference_embeddings_path = f"{embedding_save_path}/reference_{clean_id}_blip_embeddings.pkl"
             if not os.path.exists(reference_embeddings_path):
                 print("Generating reference embeddings first...")
                 generate_reference_embeddings(args.ID)
