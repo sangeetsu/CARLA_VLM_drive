@@ -1162,9 +1162,9 @@ if __name__ == "__main__":
             
             # Grab initial values for the participant
             throttle_brake_gains, steering_gains, safety_buffer, speed_adhere = load_gains(args.ID)
-            numGener = 10
-            numMat = 7
-            initPop = np.random.rand(10,8)
+            numGener = 5
+            numMat = 15
+            initPop = np.random.rand(40,8)
             newC = initPop[:,-1] * 10
             rounded = np.round(newC)
             initPop[:,-1] = rounded 
