@@ -6,7 +6,10 @@ import time
 import json
 import os
 import pandas as pd
-import pygad as pg
+# import pygad as pg
+
+# Import the MultiObjectiveOptimizer
+from mo_optimize import MultiObjectiveOptimizer as MO
 import threading
 import argparse
 # import transforms3d
@@ -100,79 +103,101 @@ def waypoint_last_15_check(waypoint,waylist):
 #   fitness2 - 1/MSE of velocity error
 def fitness_func(ga_instance, solution, solution_idx):
     global participant_id
-    # print("Current Solution: ", solution)
-    error = run_simulator(solution)
-    #initialize blip embedder
-    initialize_blip_embedder()
+    print(f"\n===== Starting fitness evaluation for solution {solution_idx} =====")
+    print(f"Solution: {solution}")
     
-    # Generate BLIP embeddings from captured frames
-    embeddings_dict = generate_and_save_embeddings(participant_id)
-    
-    # Calculate standard error metrics
-    for actor in actor_list:
-        try:
-            actor.destroy()
-        except Exception as e:
-            print(f"Error occurred while destroying actor: {e}")
-    actor_list.clear()
-    trajE, velE = findMeanError(error)
-    
-    # Load reference embeddings if available
-    reference_embeddings_path = f"{embedding_save_path}/reference_{participant_id.replace('final', '')}_blip_embeddings.pkl"
-    blip_similarity = 1.0  # Default value if we can't calculate similarity
-    
-    # Debug information
-    print(f"Reference embeddings path: {reference_embeddings_path}")
-    print(f"File exists: {os.path.exists(reference_embeddings_path)}")
-    print(f"BLIP embedder initialized: {blip_embedder is not None}")
+    try:
+        print("Calling run_simulator...")
+        error = run_simulator(solution)
+        print(f"run_simulator completed, received {len(error)} error entries")
+        
+        #initialize blip embedder
+        print("Initializing BLIP embedder...")
+        initialize_blip_embedder()
+        
+        # Generate BLIP embeddings from captured frames
+        print(f"Generating embeddings from {len(frame_buffer)} captured frames...")
+        embeddings_dict = generate_and_save_embeddings(participant_id)
+        print(f"Generated embeddings dictionary with {len(embeddings_dict)} entries")
+        
+        # Calculate standard error metrics
+        print("Cleaning up actors...")
+        for actor in actor_list:
+            try:
+                actor.destroy()
+            except Exception as e:
+                print(f"Error occurred while destroying actor: {e}")
+        actor_list.clear()
+        
+        print("Calculating mean error...")
+        trajE, velE = findMeanError(error)
+        print(f"Mean error calculation complete: Trajectory Error={trajE}, Velocity Error={velE}")
+        
+        # Load reference embeddings if available
+        reference_embeddings_path = f"{embedding_save_path}/reference_{participant_id.replace('final', '')}_blip_embeddings.pkl"
+        blip_similarity = 1.0  # Default value if we can't calculate similarity
+        
+        # Debug information
+        print(f"Reference embeddings path: {reference_embeddings_path}")
+        print(f"File exists: {os.path.exists(reference_embeddings_path)}")
+        print(f"BLIP embedder initialized: {blip_embedder is not None}")
 
-    # If we have reference embeddings, calculate similarity
-    if os.path.exists(reference_embeddings_path) and blip_embedder is not None:
-        try:
-            reference_dict = blip_embedder.load_embeddings(reference_embeddings_path)
-            
-            # Debug info about embeddings
-            print(f"Reference dict type: {type(reference_dict)}")
-            print(f"Reference dict keys: {list(reference_dict.keys())[:5]}")
-            print(f"Reference embedding type: {type(list(reference_dict.values())[0])}")
-            
-            print(f"Current embeddings dict type: {type(embeddings_dict)}")
-            print(f"Current embeddings keys: {list(embeddings_dict.keys())[:5]}")
-            print(f"Current embedding type: {type(list(embeddings_dict.values())[0])}")
-            
-            # Extract embeddings from dictionaries - handle different possible structures
-            if isinstance(list(reference_dict.values())[0], np.ndarray):
-                # Direct embedding values
-                current_embeddings = list(embeddings_dict.values())
-                reference_embeddings = list(reference_dict.values())
-            else:
-                # Nested structure (e.g., timestamp -> {embedding, metadata})
-                print("Detected nested embedding structure, extracting...")
-                current_embeddings = [v['embedding'] if isinstance(v, dict) and 'embedding' in v 
-                                     else v for v in embeddings_dict.values()]
-                reference_embeddings = [v['embedding'] if isinstance(v, dict) and 'embedding' in v 
-                                       else v for v in reference_dict.values()]
-            
-            # Calculate similarity using DTW
-            blip_similarity = blip_embedder.get_fitness_component(reference_embeddings, current_embeddings)
-            print(f"BLIP2 Similarity score: {blip_similarity}")
-        except Exception as e:
-            print(f"Error calculating BLIP similarity: {e}")
-            import traceback
-            traceback.print_exc()
-    else:
-        print("Skipping BLIP similarity calculation - missing requirements")
-    
-    # Apply BLIP similarity as a weighting factor (70% trajectory, 30% visual)
-    visualWeight = 0.3
-    trajWeight = 0.7
-    finalFit = (1/trajE) * (trajWeight + visualWeight * blip_similarity) 
-    finalFit2 = 1/velE
-    print("Trajectory Error: ", trajE, " Velocity Error: ", velE, " BLIP2 Similarity: ", blip_similarity)
-    
-    # clear_resources()
-    
-    return [finalFit, finalFit2]
+        # If we have reference embeddings, calculate similarity
+        if os.path.exists(reference_embeddings_path) and blip_embedder is not None:
+            try:
+                reference_dict = blip_embedder.load_embeddings(reference_embeddings_path)
+                
+                # Debug info about embeddings
+                print(f"Reference dict type: {type(reference_dict)}")
+                print(f"Reference dict keys: {list(reference_dict.keys())[:5]}")
+                print(f"Reference embedding type: {type(list(reference_dict.values())[0])}")
+                
+                print(f"Current embeddings dict type: {type(embeddings_dict)}")
+                print(f"Current embeddings keys: {list(embeddings_dict.keys())[:5]}")
+                print(f"Current embedding type: {type(list(embeddings_dict.values())[0])}")
+                
+                # Extract embeddings from dictionaries - handle different possible structures
+                if isinstance(list(reference_dict.values())[0], np.ndarray):
+                    # Direct embedding values
+                    current_embeddings = list(embeddings_dict.values())
+                    reference_embeddings = list(reference_dict.values())
+                else:
+                    # Nested structure (e.g., timestamp -> {embedding, metadata})
+                    print("Detected nested embedding structure, extracting...")
+                    current_embeddings = [v['embedding'] if isinstance(v, dict) and 'embedding' in v 
+                                         else v for v in embeddings_dict.values()]
+                    reference_embeddings = [v['embedding'] if isinstance(v, dict) and 'embedding' in v 
+                                           else v for v in reference_dict.values()]
+                
+                # Calculate similarity using DTW
+                blip_similarity = blip_embedder.get_fitness_component(reference_embeddings, current_embeddings)
+                print(f"BLIP2 Similarity score: {blip_similarity}")
+            except Exception as e:
+                print(f"Error calculating BLIP similarity: {e}")
+                import traceback
+                traceback.print_exc()
+        else:
+            print("Skipping BLIP similarity calculation - missing requirements")
+        
+        # Apply BLIP similarity as a weighting factor (70% trajectory, 30% visual)
+        visualWeight = 0.3
+        trajWeight = 0.7
+        finalFit = (1/trajE) * (trajWeight + visualWeight * blip_similarity) 
+        finalFit2 = 1/velE
+        print("Trajectory Error: ", trajE, " Velocity Error: ", velE, " BLIP2 Similarity: ", blip_similarity)
+        
+        # clear_resources()
+        
+        print(f"===== Fitness evaluation completed for solution {solution_idx} =====")
+        print(f"Final fitness values: [{finalFit}, {finalFit2}]")
+        return [finalFit, finalFit2]
+        
+    except Exception as e:
+        print(f"ERROR in fitness function: {e}")
+        import traceback
+        traceback.print_exc()
+        # Return very poor fitness as fallback
+        return [-0.001, -0.001]
 
 # This function acts as a total error calculation from the array that is passed in
 # sums all of trajectory reward and velocity reward, which is a pre-squared error value
@@ -1180,8 +1205,7 @@ if __name__ == "__main__":
     participant_id = os.path.splitext(participant_filename)[0]
     track_data = traj_loader(participant_path)
     
-    # Import the MultiObjectiveOptimizer
-    from mo_optimize import MultiObjectiveOptimizer as MO
+
     
     try:
         if args.New:

@@ -1,14 +1,17 @@
 import numpy as np
 import os
 import pickle
+import time
 from pymoo.algorithms.moo.nsga2 import NSGA2
 from pymoo.core.problem import Problem
 from pymoo.operators.crossover.sbx import SBX
 from pymoo.operators.mutation.pm import PM
 from pymoo.operators.sampling.rnd import FloatRandomSampling
-from pymoo.operators.selection.tournament import TournamentSelection
 from pymoo.optimize import minimize
 from pymoo.termination.max_gen import MaximumGenerationTermination
+from pymoo.core.evaluator import Evaluator
+from pymoo.config import Config
+Config.warnings['not_compiled'] = False
 
 class MultiObjectiveOptimizer:
     """
@@ -26,7 +29,6 @@ class MultiObjectiveOptimizer:
         on_generation=None,
         gene_space=None,
         mutation_num_genes=2,
-        parent_selection_type="tournament",
     ):
         """Initialize the multi-objective optimizer."""
         self.num_generations = num_generations
@@ -54,104 +56,129 @@ class MultiObjectiveOptimizer:
         self.last_generation_parents = None
         self.pareto_fronts = None
         
-        # Initialize algorithm
+    def setup_algorithm(self):
+        """Set up the NSGA-II algorithm"""
         self.algorithm = NSGA2(
             pop_size=self.pop_size,
-            sampling=FloatRandomSampling() if self.initial_population is None else None,
+            sampling=self.initial_population if self.initial_population is not None else FloatRandomSampling(),
             crossover=SBX(prob=0.9, eta=15),
-            mutation=PM(eta=20, prob=mutation_num_genes/self.n_var),
-            selection=TournamentSelection(func_comp=self.tournament_selection),
+            mutation=PM(eta=20, prob=self.mutation_num_genes/self.n_var),
             eliminate_duplicates=True
         )
         
-        # Create problem definition
-        self.problem = None  # Will be set in run()
-
-    def tournament_selection(self, pop, P, **kwargs):
-        """Custom tournament selection that respects parent_selection_type."""
-        return P
-    
-    def _evaluate_fitness(self, x, out):
+    def custom_evaluation(self, problem, pop, algorithm):
         """
-        Evaluate the fitness function for each solution.
-        This is called by pymoo's optimization process.
+        Custom evaluation function that directly calls the fitness_func for each solution.
+        This completely bypasses pymoo's standard evaluation process.
         """
-        n_solutions = x.shape[0]
-        F = np.zeros((n_solutions, 2))  # Assuming 2 objectives: trajectory and velocity
+        print("\n===== CUSTOM EVALUATION STARTING =====")
+        
+        # Get the solutions to be evaluated
+        X = pop.get("X")
+        n_solutions = len(X)
+        
+        # Create array to store results
+        F = np.zeros((n_solutions, 2))
         
         for i in range(n_solutions):
-            solution = x[i, :]
-            # Call the original fitness function
-            fit_values = self.fitness_func(self, solution, i)
-            # Our fitness maximizes, but pymoo minimizes, so negate
-            F[i, 0] = -fit_values[0]  # Trajectory fitness
-            F[i, 1] = -fit_values[1]  # Velocity fitness
+            print(f"\n----- Evaluating Solution {i} -----")
+            print(f"Solution: {X[i]}")
+            
+            # Directly call the fitness function
+            try:
+                # Call the user-provided fitness function (passing None as ga_instance)
+                start_time = time.time()
+                fitness_values = self.fitness_func(None, X[i], i)
+                end_time = time.time()
+                
+                print(f"Solution {i} evaluated in {end_time - start_time:.2f} seconds")
+                print(f"Fitness values: {fitness_values}")
+                
+                # Our fitness maximizes, but pymoo minimizes, so negate
+                F[i, 0] = -fitness_values[0]
+                F[i, 1] = -fitness_values[1]
+            except Exception as e:
+                print(f"Error evaluating solution {i}: {e}")
+                import traceback
+                traceback.print_exc()
+                F[i, 0] = 1000  # High value for minimization
+                F[i, 1] = 1000
         
-        out["F"] = F
-    
-    def callback(self, algorithm):
-        """Callback after each generation."""
-        self.current_generation += 1
+        # Set the fitness values in the population
+        pop.set("F", F)
         
-        # Store current population and fitness
-        self.last_generation_parents = algorithm.pop.get("X")
-        self.last_generation_fitness = -algorithm.pop.get("F")  # Negate to convert back to maximization
+        print("\n===== CUSTOM EVALUATION COMPLETE =====")
+        return pop
         
-        # Extract Pareto fronts
-        ranks = algorithm.pop.get("rank")
-        self.pareto_fronts = []
-        for front_idx in range(int(np.max(ranks))+1):
-            front = np.where(ranks == front_idx)[0]
-            self.pareto_fronts.append(front.tolist())
-        
-        # Call the user's callback if provided
-        if self.on_generation:
-            self.on_generation(self)
-        
-        print(f"Generation {self.current_generation}/{self.num_generations} completed")
-    
     def run(self):
         """Run the optimization algorithm."""
+        print("\n===== STARTING OPTIMIZATION RUN =====")
+        
+        # Create a fresh algorithm
+        self.setup_algorithm()
+        
         # Create problem definition
-        self.problem = Problem(
+        problem = Problem(
             n_var=self.n_var,
-            n_obj=2,  # Two objectives: trajectory and velocity
-            n_constr=0,  # No constraints
+            n_obj=2,
+            n_constr=0,
             xl=self.xl,
-            xu=self.xu,
-            evaluation_of=self._evaluate_fitness
+            xu=self.xu
         )
         
-        # If we have an initial population, set it
-        if self.initial_population is not None:
-            # Ensure initial population respects bounds
-            self.initial_population = np.clip(self.initial_population, self.xl, self.xu)
-            self.algorithm.initialization.sampling = self.initial_population
+        # Run just one generation
+        termination = MaximumGenerationTermination(1)
         
-        # Run optimization
-        termination = MaximumGenerationTermination(self.num_generations)
-        self.result = minimize(
-            self.problem,
+        # Override the standard evaluator with our custom one
+        evaluator = Evaluator()
+        evaluator.eval = lambda problem, pop, **kwargs: self.custom_evaluation(problem, pop, self.algorithm)
+        
+        # Run the algorithm
+        print("Starting NSGA-II run...")
+        res = minimize(
+            problem,
             self.algorithm,
             termination,
-            callback=self.callback,
+            seed=1,
             verbose=True,
-            save_history=True
+            save_history=True,
+            evaluator=evaluator
         )
         
-        # Store final results
-        self.last_generation_parents = self.result.X
-        self.last_generation_fitness = -self.result.F  # Negate to convert back to maximization
-        
-        # Extract final Pareto front
-        ranks = self.algorithm.pop.get("rank")
-        self.pareto_fronts = []
-        for front_idx in range(int(np.max(ranks))+1):
-            front = np.where(ranks == front_idx)[0]
-            self.pareto_fronts.append(front.tolist())
-        
         print("Optimization completed!")
-        return self.result
+        
+        # Store results
+        self.current_generation += 1
+        self.result = res
+        
+        if res.X is not None and len(res.X) > 0:
+            print("Storing results...")
+            # Store the final population
+            self.last_generation_parents = res.pop.get("X")
+            self.last_generation_fitness = -res.pop.get("F")  # Convert back to maximization
+            
+            # Extract Pareto fronts
+            try:
+                ranks = res.pop.get("rank")
+                self.pareto_fronts = []
+                for i in range(int(np.max(ranks)) + 1):
+                    front = np.where(ranks == i)[0]
+                    self.pareto_fronts.append(front.tolist())
+            except:
+                # Fallback if rank information not available
+                print("Using simple Pareto front extraction")
+                self.pareto_fronts = [[i for i in range(len(self.last_generation_parents))]]
+            
+            # Set initial population for next run
+            self.initial_population = self.last_generation_parents
+        else:
+            print("Warning: No valid results from optimization!")
+            
+        # Call generation callback
+        if self.on_generation:
+            self.on_generation(self)
+            
+        return res
     
     def best_solution(self, last_generation_fitness=None):
         """
@@ -166,6 +193,10 @@ class MultiObjectiveOptimizer:
             fitness = self.last_generation_fitness
         else:
             fitness = last_generation_fitness
+            
+        if fitness is None or len(fitness) == 0:
+            print("Warning: No fitness values available")
+            return None, None, None
         
         # For multi-objective, we choose one solution from the Pareto front
         # Here we prioritize the first objective (trajectory fitness)
@@ -177,12 +208,14 @@ class MultiObjectiveOptimizer:
     
     def save(self, filename):
         """
-        Save the optimizer state to a file without freezing.
+        Save the optimizer state to a file.
         
         Args:
             filename: Name of the file to save to (without extension)
         """
-        # Create a dictionary with minimal necessary data
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(filename) if os.path.dirname(filename) else ".", exist_ok=True)
+        
         data = {
             "last_generation_parents": self.last_generation_parents.tolist() if self.last_generation_parents is not None else None,
             "last_generation_fitness": self.last_generation_fitness.tolist() if self.last_generation_fitness is not None else None,
@@ -191,9 +224,9 @@ class MultiObjectiveOptimizer:
             "xl": self.xl.tolist(),
             "xu": self.xu.tolist(),
             "current_generation": self.current_generation,
+            "pop_size": self.pop_size,
         }
         
-        # Save using pickle
         try:
             print(f"Saving state to {filename}.pkl...")
             with open(f"{filename}.pkl", "wb") as f:
@@ -221,8 +254,8 @@ class MultiObjectiveOptimizer:
             
             # Create a new instance
             optimizer = cls(
-                num_generations=100,  # Default values, will be overwritten
-                pop_size=40
+                num_generations=1,
+                pop_size=data.get("pop_size", 40)
             )
             
             # Set loaded state
@@ -233,6 +266,9 @@ class MultiObjectiveOptimizer:
             optimizer.last_generation_fitness = np.array(data["last_generation_fitness"]) if data["last_generation_fitness"] is not None else None
             optimizer.pareto_fronts = data["pareto_fronts"]
             optimizer.current_generation = data["current_generation"]
+            
+            # Set initial population for next run
+            optimizer.initial_population = optimizer.last_generation_parents
             
             print(f"Optimization state loaded from {filename}.pkl")
             return optimizer
