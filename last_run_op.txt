@@ -1,0 +1,951 @@
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [359.492560939485, 359.5925609409751, 359.6925609424652, 359.7925609439553, 359.89256094544544]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.008871537807835094
+Trajectory Error:  49358.9806234983  Velocity Error:  0.05725688449297331  BLIP2 Similarity:  0.008871537807835094
+===== Fitness evaluation completed for solution 8 =====
+Final fitness values: [1.4235736890559587e-05, 17.465148669112832]
+Solution 8 evaluated in 32.81 seconds
+Fitness values: [1.4235736890559587e-05, 17.465148669112832]
+
+----- Evaluating Solution 9 -----
+Solution: [0.3368000448157151  0.12227682319558952 0.23760927967947398
+ 0.7304482785734958  0.5880226000033947  0.11918916961494497
+ 0.32133817032102385 1.                 ]
+
+===== Starting fitness evaluation for solution 9 =====
+Solution: [0.3368000448157151  0.12227682319558952 0.23760927967947398
+ 0.7304482785734958  0.5880226000033947  0.11918916961494497
+ 0.32133817032102385 1.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 511 captured frames...
+Generating embeddings for 511 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 511 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.61171357149, Velocity Error=0.04467347059095647
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [410.19256169497385, 410.29256169646396, 410.3925616979541, 410.4925616994442, 410.5925617009343]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.008711817998445948
+Trajectory Error:  49358.61171357149  Velocity Error:  0.04467347059095647  BLIP2 Similarity:  0.008711817998445948
+===== Fitness evaluation completed for solution 9 =====
+Final fitness values: [1.42348725178254e-05, 22.384649922462845]
+Solution 9 evaluated in 33.23 seconds
+Fitness values: [1.42348725178254e-05, 22.384649922462845]
+
+----- Evaluating Solution 10 -----
+Solution: [0.648065531144179   0.998771822778996   0.3544051566925458
+ 0.25140503706836526 0.7662482755886063  0.02405287889868757
+ 0.906968562862589   1.                 ]
+
+===== Starting fitness evaluation for solution 10 =====
+Solution: [0.648065531144179   0.998771822778996   0.3544051566925458
+ 0.25140503706836526 0.7662482755886063  0.02405287889868757
+ 0.906968562862589   1.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 515 captured frames...
+Generating embeddings for 515 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 515 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.659628246096, Velocity Error=0.04667449077475609
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [461.69256246238365, 461.79256246387376, 461.8925624653639, 461.992562466854, 462.0925624683441]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.008451138616913075
+Trajectory Error:  49358.659628246096  Velocity Error:  0.04667449077475609  BLIP2 Similarity:  0.008451138616913075
+===== Fitness evaluation completed for solution 10 =====
+Final fitness values: [1.4233274300322357e-05, 21.424979328126923]
+Solution 10 evaluated in 33.54 seconds
+Fitness values: [1.4233274300322357e-05, 21.424979328126923]
+
+----- Evaluating Solution 11 -----
+Solution: [0.7177964086156142  0.37519612699204596 0.5711841147939004
+ 0.3708001477988434  0.6090851228393567  0.5843591704556577
+ 0.12252606392564558 0.                 ]
+
+===== Starting fitness evaluation for solution 11 =====
+Solution: [0.7177964086156142  0.37519612699204596 0.5711841147939004
+ 0.3708001477988434  0.6090851228393567  0.5843591704556577
+ 0.12252606392564558 0.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 549 captured frames...
+Generating embeddings for 549 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 549 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.64279781132, Velocity Error=0.036693959344588765
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [513.5925632357539, 513.692563237244, 513.7925632387341, 513.8925632402243, 513.9925632417144]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.0080170547438259
+Trajectory Error:  49358.64279781132  Velocity Error:  0.036693959344588765  BLIP2 Similarity:  0.0080170547438259
+===== Fitness evaluation completed for solution 11 =====
+Final fitness values: [1.4230640807941625e-05, 27.252442033009157]
+Solution 11 evaluated in 35.57 seconds
+Fitness values: [1.4230640807941625e-05, 27.252442033009157]
+
+----- Evaluating Solution 12 -----
+Solution: [0.5 0.1 0.1 0.5 0.1 0.1 0.8 0. ]
+
+===== Starting fitness evaluation for solution 12 =====
+Solution: [0.5 0.1 0.1 0.5 0.1 0.1 0.8 0. ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+COLLISION
+COLLISION
+COLLISION
+COLLISION
+COLLISION
+COLLISION
+run_simulator completed, received 7501 error entries
+Initializing BLIP embedder...
+Generating embeddings from 351 captured frames...
+Generating embeddings for 351 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 351 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=1000386.4033861487, Velocity Error=951036.0415260311
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [568.8925640597881, 568.9925640612782, 569.0925640627684, 569.1925640642585, 569.2925640657486]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.01195144089430772
+Trajectory Error:  1000386.4033861487  Velocity Error:  951036.0415260311  BLIP2 Similarity:  0.01195144089430772
+===== Fitness evaluation completed for solution 12 =====
+Final fitness values: [7.033136694848785e-07, 1.0514848610736155e-06]
+Solution 12 evaluated in 22.62 seconds
+Fitness values: [7.033136694848785e-07, 1.0514848610736155e-06]
+
+----- Evaluating Solution 13 -----
+Solution: [0.7618877592668303  0.43620237110288607 0.9288974062915512
+ 0.6919811500835404  0.749435955493872   0.6219322784582708
+ 0.9788005616791855  7.                 ]
+
+===== Starting fitness evaluation for solution 13 =====
+Solution: [0.7618877592668303  0.43620237110288607 0.9288974062915512
+ 0.6919811500835404  0.749435955493872   0.6219322784582708
+ 0.9788005616791855  7.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 406 captured frames...
+Generating embeddings for 406 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 406 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.98445896328, Velocity Error=0.3819794428906654
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [604.3925645887794, 604.4925645902695, 604.5925645917596, 604.6925645932497, 604.7925645947398]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.010606686508048486
+Trajectory Error:  49358.98445896328  Velocity Error:  0.3819794428906654  BLIP2 Similarity:  0.010606686508048486
+===== Fitness evaluation completed for solution 13 =====
+Final fitness values: [1.4246281880799944e-05, 2.6179419301531146]
+Solution 13 evaluated in 26.93 seconds
+Fitness values: [1.4246281880799944e-05, 2.6179419301531146]
+
+----- Evaluating Solution 14 -----
+Solution: [ 0.5425270777173832    0.031492352572393356  0.3115982581789939
+  0.17947373949052614   0.937362224881046     0.4839417190985167
+  0.8999256038725266   10.                  ]
+
+===== Starting fitness evaluation for solution 14 =====
+Solution: [ 0.5425270777173832    0.031492352572393356  0.3115982581789939
+  0.17947373949052614   0.937362224881046     0.4839417190985167
+  0.8999256038725266   10.                  ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 345 captured frames...
+Generating embeddings for 345 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 345 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49360.11207829241, Velocity Error=0.3250880687243262
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [645.392565199727, 645.4925652012171, 645.5925652027072, 645.6925652041973, 645.7925652056874]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.010837826117613835
+Trajectory Error:  49360.11207829241  Velocity Error:  0.3250880687243262  BLIP2 Similarity:  0.010837826117613835
+===== Fitness evaluation completed for solution 14 =====
+Final fitness values: [1.4247361244233478e-05, 3.0760895160627912]
+Solution 14 evaluated in 22.89 seconds
+Fitness values: [1.4247361244233478e-05, 3.0760895160627912]
+
+===== CUSTOM EVALUATION COMPLETE =====
+==========================================================
+n_gen  |  n_eval  | n_nds  |      eps      |   indicator  
+==========================================================
+     1 |        0 |      3 |             - |             -
+Optimization completed!
+Storing results...
+GENERATION COMPLETED!
+Saving state to participantGA/AM5287.pkl...
+Optimization state saved to participantGA/AM5287.pkl
+Save status: True
+PID gains updated in JSON file.
+Optimization iteration completed successfully.
+
+Cleanup completed.
+Iteration 29 completed
+Cleaning up CARLA processes
+./GA_bliptest.sh: line 39: 154306 Killed                  /home/sangeetsu/sample33/LinuxNoEditor/CarlaUE4.sh -windowed > /dev/null 2>&1
+=========================================
+Starting Iteration 30 of 30
+=========================================
+Running Multi-Objective Optimizer (NSGA-II)
+File limit increased from 1048576 to 1048576
+Attempting to load optimizer state from participantGA/AM5287...
+Optimization state loaded from participantGA/AM5287.pkl
+Continuing optimization run...
+
+===== STARTING OPTIMIZATION RUN =====
+Starting NSGA-II run...
+
+===== CUSTOM EVALUATION STARTING =====
+
+----- Evaluating Solution 0 -----
+Solution: [0.8512309748540224  0.10843927031550005 0.20010498410051114
+ 0.3557918800253588  0.6355212513428979  0.9671857290897347
+ 0.1408949334571885  9.                 ]
+
+===== Starting fitness evaluation for solution 0 =====
+Solution: [0.8512309748540224  0.10843927031550005 0.20010498410051114
+ 0.3557918800253588  0.6355212513428979  0.9671857290897347
+ 0.1408949334571885  9.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Initializing BLIP embedder...
+Initializing BLIP2 model on cuda
+Loading checkpoint shards: 100%|███████████████████████████████████████████| 2/2 [00:00<00:00,  7.10it/s]
+BLIP embedder initialized successfully
+Generating embeddings from 329 captured frames...
+Generating embeddings for 329 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 329 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49361.0501558563, Velocity Error=0.01923656393560001
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [2.3549911685549887, 2.454991170045105, 2.554991171535221, 2.654991173025337, 2.754991174515453]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.011274073701385019
+Trajectory Error:  49361.0501558563  Velocity Error:  0.01923656393560001  BLIP2 Similarity:  0.011274073701385019
+===== Fitness evaluation completed for solution 0 =====
+Final fitness values: [1.4249741848876867e-05, 51.984335838135685]
+Solution 0 evaluated in 24.65 seconds
+Fitness values: [1.4249741848876867e-05, 51.984335838135685]
+
+----- Evaluating Solution 1 -----
+Solution: [0.3820116976415636  0.18899472288022368 0.7634722312324713
+ 0.22211921530428147 0.5733784888032305  0.48616359903161965
+ 0.263755897479767   9.                 ]
+
+===== Starting fitness evaluation for solution 1 =====
+Solution: [0.3820116976415636  0.18899472288022368 0.7634722312324713
+ 0.22211921530428147 0.5733784888032305  0.48616359903161965
+ 0.263755897479767   9.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 378 captured frames...
+Generating embeddings for 378 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 378 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49359.818717849914, Velocity Error=0.025499696123666805
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [35.654991664763656, 35.75499166625377, 35.85499166774389, 35.954991669234005, 36.05499167072412]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.010758448414294216
+Trajectory Error:  49359.818717849914  Velocity Error:  0.025499696123666805  BLIP2 Similarity:  0.010758448414294216
+===== Fitness evaluation completed for solution 1 =====
+Final fitness values: [1.4246963477399912e-05, 39.21615360239054]
+Solution 1 evaluated in 24.75 seconds
+Fitness values: [1.4246963477399912e-05, 39.21615360239054]
+
+----- Evaluating Solution 2 -----
+Solution: [0.4275139867065155   0.6785877098118396   0.5124455083028031
+ 0.9690584800902271   0.1569019594323079   0.6481098492730788
+ 0.017402133155763777 5.                  ]
+
+===== Starting fitness evaluation for solution 2 =====
+Solution: [0.4275139867065155   0.6785877098118396   0.5124455083028031
+ 0.9690584800902271   0.1569019594323079   0.6481098492730788
+ 0.017402133155763777 5.                  ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 412 captured frames...
+Generating embeddings for 412 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 412 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49359.06240629954, Velocity Error=0.06484485416247195
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [73.85499223398801, 73.95499223547813, 74.05499223696825, 74.15499223845836, 74.25499223994848]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.010311551702438899
+Trajectory Error:  49359.06240629954  Velocity Error:  0.06484485416247195  BLIP2 Similarity:  0.010311551702438899
+===== Fitness evaluation completed for solution 2 =====
+Final fitness values: [1.4244465580063327e-05, 15.421424150240993]
+Solution 2 evaluated in 26.86 seconds
+Fitness values: [1.4244465580063327e-05, 15.421424150240993]
+
+----- Evaluating Solution 3 -----
+Solution: [0.7435348522234022  0.40268545159127533 0.8950222731636182
+ 0.22600114790177772 0.7005080059644211  0.4368294618542844
+ 0.5775840194985715  3.                 ]
+
+===== Starting fitness evaluation for solution 3 =====
+Solution: [0.7435348522234022  0.40268545159127533 0.8950222731636182
+ 0.22600114790177772 0.7005080059644211  0.4368294618542844
+ 0.5775840194985715  3.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 470 captured frames...
+Generating embeddings for 470 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 470 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.53717350632, Velocity Error=0.021782570287220807
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [115.45499285387632, 115.55499285536644, 115.65499285685655, 115.75499285834667, 115.85499285983678]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.009407729668451584
+Trajectory Error:  49358.53717350632  Velocity Error:  0.021782570287220807  BLIP2 Similarity:  0.009407729668451584
+===== Fitness evaluation completed for solution 3 =====
+Final fitness values: [1.423912374935176e-05, 45.908264581001745]
+Solution 3 evaluated in 30.74 seconds
+Fitness values: [1.423912374935176e-05, 45.908264581001745]
+
+----- Evaluating Solution 4 -----
+Solution: [0.9742848707954568  0.955290788408077   0.06817239903839578
+ 0.8854097452095048  0.5189429542214384  0.03975763131182142
+ 0.7289423165759046  4.                 ]
+
+===== Starting fitness evaluation for solution 4 =====
+Solution: [0.9742848707954568  0.955290788408077   0.06817239903839578
+ 0.8854097452095048  0.5189429542214384  0.03975763131182142
+ 0.7289423165759046  4.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 420 captured frames...
+Generating embeddings for 420 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 420 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.94463559552, Velocity Error=0.0528805419933973
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [162.85499356019136, 162.95499356168148, 163.0549935631716, 163.1549935646617, 163.25499356615182]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.011017866636590299
+Trajectory Error:  49358.94463559552  Velocity Error:  0.0528805419933973  BLIP2 Similarity:  0.011017866636590299
+===== Fitness evaluation completed for solution 4 =====
+Final fitness values: [1.4248792497151245e-05, 18.910547477460817]
+Solution 4 evaluated in 27.70 seconds
+Fitness values: [1.4248792497151245e-05, 18.910547477460817]
+
+----- Evaluating Solution 5 -----
+Solution: [ 0.5425270777173832    0.031492352572393356  0.3115982581789939
+  0.17947373949052614   0.937362224881046     0.4839417190985167
+  0.8999256038725266   10.                  ]
+
+===== Starting fitness evaluation for solution 5 =====
+Solution: [ 0.5425270777173832    0.031492352572393356  0.3115982581789939
+  0.17947373949052614   0.937362224881046     0.4839417190985167
+  0.8999256038725266   10.                  ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+COLLISION
+run_simulator completed, received 7501 error entries
+Initializing BLIP embedder...
+Generating embeddings from 507 captured frames...
+Generating embeddings for 507 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 507 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=979634.7072081843, Velocity Error=930279.4510883339
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [205.2549941920006, 205.3549941934907, 205.45499419498083, 205.55499419647094, 205.65499419796106]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.010422805945916738
+Trajectory Error:  979634.7072081843  Velocity Error:  930279.4510883339  BLIP2 Similarity:  0.010422805945916738
+===== Fitness evaluation completed for solution 5 =====
+Final fitness values: [7.177439065910431e-07, 1.0749458120676536e-06]
+Solution 5 evaluated in 32.12 seconds
+Fitness values: [7.177439065910431e-07, 1.0749458120676536e-06]
+
+----- Evaluating Solution 6 -----
+Solution: [0.043587058514966914 0.5255850032782728   0.07776374698373223
+ 0.44364006603148953  0.3426012672458243   0.9338758642179686
+ 0.4141912572793637   5.                  ]
+
+===== Starting fitness evaluation for solution 6 =====
+Solution: [0.043587058514966914 0.5255850032782728   0.07776374698373223
+ 0.44364006603148953  0.3426012672458243   0.9338758642179686
+ 0.4141912572793637   5.                  ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 501 captured frames...
+Generating embeddings for 501 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 501 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.51203799909, Velocity Error=0.026262067450555666
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [256.35499495344993, 256.45499495494005, 256.55499495643016, 256.6549949579203, 256.7549949594104]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.008311186764532014
+Trajectory Error:  49358.51203799909  Velocity Error:  0.026262067450555666  BLIP2 Similarity:  0.008311186764532014
+===== Fitness evaluation completed for solution 6 =====
+Final fitness values: [1.423246623578399e-05, 38.0777332890005]
+Solution 6 evaluated in 32.73 seconds
+Fitness values: [1.423246623578399e-05, 38.0777332890005]
+
+----- Evaluating Solution 7 -----
+Solution: [0.29879447834927253 0.9037345718761128  0.5699554884554108
+ 0.02281596320438095 0.5437440181087416  0.8132818333350051
+ 0.9376220358019205  2.                 ]
+
+===== Starting fitness evaluation for solution 7 =====
+Solution: [0.29879447834927253 0.9037345718761128  0.5699554884554108
+ 0.02281596320438095 0.5437440181087416  0.8132818333350051
+ 0.9376220358019205  2.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 501 captured frames...
+Generating embeddings for 501 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 501 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.55382919215, Velocity Error=0.042616225056264036
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [306.8549957059586, 306.9549957074487, 307.0549957089388, 307.1549957104289, 307.25499571191904]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.008605720606436098
+Trajectory Error:  49358.55382919215  Velocity Error:  0.042616225056264036  BLIP2 Similarity:  0.008605720606436098
+===== Fitness evaluation completed for solution 7 =====
+Final fitness values: [1.4234244354347404e-05, 23.46524120049936]
+Solution 7 evaluated in 32.85 seconds
+Fitness values: [1.4234244354347404e-05, 23.46524120049936]
+
+----- Evaluating Solution 8 -----
+Solution: [0.20499215645018398 0.27843129244114007 0.7119366392830796
+ 0.41829801796844124 0.6190604647207376  0.4099964043972504
+ 0.16394387070829486 2.                 ]
+
+===== Starting fitness evaluation for solution 8 =====
+Solution: [0.20499215645018398 0.27843129244114007 0.7119366392830796
+ 0.41829801796844124 0.6190604647207376  0.4099964043972504
+ 0.16394387070829486 2.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 529 captured frames...
+Generating embeddings for 529 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 529 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.793332761525, Velocity Error=0.025428204260317205
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [357.3549964584672, 357.45499645995733, 357.55499646144744, 357.65499646293756, 357.7549964644277]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.007975516895938782
+Trajectory Error:  49358.793332761525  Velocity Error:  0.025428204260317205  BLIP2 Similarity:  0.007975516895938782
+===== Fitness evaluation completed for solution 8 =====
+Final fitness values: [1.4230344942459803e-05, 39.326410538575935]
+Solution 8 evaluated in 34.44 seconds
+Fitness values: [1.4230344942459803e-05, 39.326410538575935]
+
+----- Evaluating Solution 9 -----
+Solution: [0.3368000448157151  0.12227682319558952 0.23760927967947398
+ 0.7304482785734958  0.5880226000033947  0.11918916961494497
+ 0.32133817032102385 1.                 ]
+
+===== Starting fitness evaluation for solution 9 =====
+Solution: [0.3368000448157151  0.12227682319558952 0.23760927967947398
+ 0.7304482785734958  0.5880226000033947  0.11918916961494497
+ 0.32133817032102385 1.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 511 captured frames...
+Generating embeddings for 511 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 511 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.56785868109, Velocity Error=0.04365118261999212
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [410.6549972526991, 410.7549972541892, 410.85499725567934, 410.95499725716945, 411.05499725865957]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.008892293509913893
+Trajectory Error:  49358.56785868109  Velocity Error:  0.04365118261999212  BLIP2 Similarity:  0.008892293509913893
+===== Fitness evaluation completed for solution 9 =====
+Final fitness values: [1.4235982090582277e-05, 22.908886769587838]
+Solution 9 evaluated in 33.31 seconds
+Fitness values: [1.4235982090582277e-05, 22.908886769587838]
+
+----- Evaluating Solution 10 -----
+Solution: [0.040669597903990606 0.34799652434377504  0.564013700165127
+ 0.921519589949612    0.8740204637772634   0.29468273489559393
+ 0.7856047830881644   7.                  ]
+
+===== Starting fitness evaluation for solution 10 =====
+Solution: [0.040669597903990606 0.34799652434377504  0.564013700165127
+ 0.921519589949612    0.8740204637772634   0.29468273489559393
+ 0.7856047830881644   7.                  ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 494 captured frames...
+Generating embeddings for 494 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 494 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49359.024698432644, Velocity Error=0.06577128624027863
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [462.1549980201089, 462.254998021599, 462.35499802308914, 462.45499802457925, 462.55499802606937]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.008733829629610472
+Trajectory Error:  49359.024698432644  Velocity Error:  0.06577128624027863  BLIP2 Similarity:  0.008733829629610472
+===== Fitness evaluation completed for solution 10 =====
+Final fitness values: [1.4234887200094825e-05, 15.204203189014047]
+Solution 10 evaluated in 32.14 seconds
+Fitness values: [1.4234887200094825e-05, 15.204203189014047]
+
+----- Evaluating Solution 11 -----
+Solution: [0.7618877592668303  0.43620237110288607 0.9288974062915512
+ 0.6919811500835404  0.749435955493872   0.6219322784582708
+ 0.9788005616791855  7.                 ]
+
+===== Starting fitness evaluation for solution 11 =====
+Solution: [0.7618877592668303  0.43620237110288607 0.9288974062915512
+ 0.6919811500835404  0.749435955493872   0.6219322784582708
+ 0.9788005616791855  7.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+COLLISION
+run_simulator completed, received 7501 error entries
+Initializing BLIP embedder...
+Generating embeddings from 297 captured frames...
+Generating embeddings for 297 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 297 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=1007571.6233463723, Velocity Error=958219.4370291716
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [511.95499876218673, 512.0549987636768, 512.154998765167, 512.2549987666571, 512.3549987681472]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.014656734190985884
+Trajectory Error:  1007571.6233463723  Velocity Error:  958219.4370291716  BLIP2 Similarity:  0.014656734190985884
+===== Fitness evaluation completed for solution 11 =====
+Final fitness values: [6.991036705835705e-07, 1.0436022912459e-06]
+Solution 11 evaluated in 19.39 seconds
+Fitness values: [6.991036705835705e-07, 1.0436022912459e-06]
+
+----- Evaluating Solution 12 -----
+Solution: [0.7177964086156142  0.37519612699204596 0.5711841147939004
+ 0.3708001477988434  0.6090851228393567  0.5843591704556577
+ 0.12252606392564558 0.                 ]
+
+===== Starting fitness evaluation for solution 12 =====
+Solution: [0.7177964086156142  0.37519612699204596 0.5711841147939004
+ 0.3708001477988434  0.6090851228393567  0.5843591704556577
+ 0.12252606392564558 0.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 550 captured frames...
+Generating embeddings for 550 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 550 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.59304684063, Velocity Error=0.04204028473891764
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [542.0549992107117, 542.1549992122018, 542.2549992136919, 542.354999215182, 542.4549992166721]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.007883631736911834
+Trajectory Error:  49358.59304684063  Velocity Error:  0.04204028473891764  BLIP2 Similarity:  0.007883631736911834
+===== Fitness evaluation completed for solution 12 =====
+Final fitness values: [1.4229844210805171e-05, 23.786708539447105]
+Solution 12 evaluated in 35.71 seconds
+Fitness values: [1.4229844210805171e-05, 23.786708539447105]
+
+----- Evaluating Solution 13 -----
+Solution: [0.648065531144179   0.998771822778996   0.3544051566925458
+ 0.25140503706836526 0.7662482755886063  0.02405287889868757
+ 0.906968562862589   1.                 ]
+
+===== Starting fitness evaluation for solution 13 =====
+Solution: [0.648065531144179   0.998771822778996   0.3544051566925458
+ 0.25140503706836526 0.7662482755886063  0.02405287889868757
+ 0.906968562862589   1.                 ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+run_simulator completed, received 7500 error entries
+Initializing BLIP embedder...
+Generating embeddings from 517 captured frames...
+Generating embeddings for 517 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 517 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=49358.67149919467, Velocity Error=0.03658469957601825
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [597.455000036236, 597.5550000377261, 597.6550000392162, 597.7550000407064, 597.8550000421965]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.008324832825161438
+Trajectory Error:  49358.67149919467  Velocity Error:  0.03658469957601825  BLIP2 Similarity:  0.008324832825161438
+===== Fitness evaluation completed for solution 13 =====
+Final fitness values: [1.423250319569501e-05, 27.333831125827068]
+Solution 13 evaluated in 33.98 seconds
+Fitness values: [1.423250319569501e-05, 27.333831125827068]
+
+----- Evaluating Solution 14 -----
+Solution: [0.5 0.1 0.1 0.5 0.1 0.1 0.8 0. ]
+
+===== Starting fitness evaluation for solution 14 =====
+Solution: [0.5 0.1 0.1 0.5 0.1 0.1 0.8 0. ]
+Calling run_simulator...
+STARTING CARLA CLIENT SIMULATION
+WARNING: Version mismatch detected: You are trying to connect to a simulator that might be incompatible with this API 
+WARNING: Client API version     = 0.9.13 
+WARNING: Simulator API version  = 0.9.13-1-g8854804f4-dirty 
+WARNING: cannot parse georeference: ''. Using default values. 
+WARNING: cannot parse georeference: ''. Using default values. 
+COLLISION
+run_simulator completed, received 7501 error entries
+Initializing BLIP embedder...
+Generating embeddings from 447 captured frames...
+Generating embeddings for 447 frames
+Embeddings saved to embeddings/AM5287final_blip_embeddings.pkl
+Generated embeddings dictionary with 447 entries
+Cleaning up actors...
+Calculating mean error...
+Mean error calculation complete: Trajectory Error=987613.971612544, Velocity Error=938262.7752418177
+Reference embeddings path: embeddings/reference_AM5287_blip_embeddings.pkl
+File exists: True
+BLIP embedder initialized: True
+Embeddings loaded from embeddings/reference_AM5287_blip_embeddings.pkl
+Reference dict type: <class 'dict'>
+Reference dict keys: [6.075506032568228, 6.175506034058344, 6.27550603554846, 6.375506037038576, 6.475506038528692]
+Reference embedding type: <class 'numpy.ndarray'>
+Current embeddings dict type: <class 'dict'>
+Current embeddings keys: [649.5550008125865, 649.6550008140766, 649.7550008155667, 649.8550008170569, 649.955000818547]
+Current embedding type: <class 'numpy.ndarray'>
+BLIP2 Similarity score: 0.010338438766042094
+Trajectory Error:  987613.971612544  Velocity Error:  938262.7752418177  BLIP2 Similarity:  0.010338438766042094
+===== Fitness evaluation completed for solution 14 =====
+Final fitness values: [7.11919385346292e-07, 1.0657995034943924e-06]
+Solution 14 evaluated in 28.55 seconds
+Fitness values: [7.11919385346292e-07, 1.0657995034943924e-06]
+
+===== CUSTOM EVALUATION COMPLETE =====
+==========================================================
+n_gen  |  n_eval  | n_nds  |      eps      |   indicator  
+==========================================================
+     1 |        0 |      1 |             - |             -
+Optimization completed!
+Storing results...
+GENERATION COMPLETED!
+Saving state to participantGA/AM5287.pkl...
+Optimization state saved to participantGA/AM5287.pkl
+Save status: True
+PID gains updated in JSON file.
+Optimization iteration completed successfully.
+
+Cleanup completed.
+Iteration 30 completed
+Cleaning up CARLA processes
+./GA_bliptest.sh: line 39: 158182 Killed                  /home/sangeetsu/sample33/LinuxNoEditor/CarlaUE4.sh -windowed > /dev/null 2>&1
+=========================================
+Optimization completed with 30 iterations
+=========================================
