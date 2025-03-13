@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
-# Script exists to run the GA in an outer loop... 
-# It uses a similar structure as my previous bash script as I know the previous script successfully restarts the
-# server``
+# Script to run multi-objective optimization with improved resource management
 
 # Run first instance without an argument
 file_path="participant_data/AM5287final.csv"
@@ -9,32 +7,68 @@ file_path="participant_data/AM5287final.csv"
 filename=$(basename "$file_path")
 # Retrieve ID
 ID=${filename%final.csv}
-echo "Opening Program"
+echo "Opening CARLA Server"
 /home/sangeetsu/sample33/LinuxNoEditor/CarlaUE4.sh -windowed > /dev/null 2>&1 &
 
-PID=$!
-let "PID2=$PID+8"
+# Store CARLA PIDs
+SERVER_PID=$!
+let "SERVER_PID2=$SERVER_PID+8"
 sleep 6
-echo "Initial Optimization Run"
+
+# Create necessary directories if they don't exist
+mkdir -p participantGA
+mkdir -p participantPIDS
+mkdir -p embeddings
+
+echo "Initial Optimization Run with NSGA-II"
 python3 blip_pid.py -i $ID --New &
-PID3=$!
-wait $PID3
-kill -9 $PID
-kill -9 $PID2
+OPT_PID=$!
+wait $OPT_PID
+echo "Initial run completed"
+
+# Clean up processes
+echo "Cleaning up CARLA processes"
+kill -9 $SERVER_PID
+kill -9 $SERVER_PID2
 sleep 3
-for n in {2..30};
-do
-	echo "Starting Iteration $n" 
-	/home/sangeetsu/sample33/LinuxNoEditor/CarlaUE4.sh -windowed > /dev/null 2>&1 &
-	PID=$!
-	let "PID2=$PID+8"
-	sleep 3
-	echo "Running Optimizer"
-	python3 blip_pid.py -i $ID &
-	PID3=$!
-	wait $PID3
-	kill -9 $PID
-	kill -9 $PID2
-	sleep 3
+
+# Set the number of iterations
+TOTAL_ITERS=30
+
+# Run subsequent iterations
+for n in $(seq 2 $TOTAL_ITERS); do
+    echo "========================================="
+    echo "Starting Iteration $n of $TOTAL_ITERS" 
+    echo "========================================="
+    
+    # Launch CARLA server
+    /home/sangeetsu/sample33/LinuxNoEditor/CarlaUE4.sh -windowed > /dev/null 2>&1 &
+    SERVER_PID=$!
+    let "SERVER_PID2=$SERVER_PID+8"
+    sleep 3
+    
+    echo "Running Multi-Objective Optimizer (NSGA-II)"
+    python3 blip_pid.py -i $ID &
+    OPT_PID=$!
+    wait $OPT_PID
+    
+    echo "Iteration $n completed"
+    echo "Cleaning up CARLA processes"
+    kill -9 $SERVER_PID
+    kill -9 $SERVER_PID2
+    sleep 3
+    
+    # Monitor disk space
+    DISK_SPACE=$(df -h . | awk 'NR==2 {print $5}' | sed 's/%//')
+    if [ $DISK_SPACE -gt 90 ]; then
+        echo "WARNING: Disk space usage is above 90%. Consider freeing up space."
+    fi
+    
+    # Optional: Clean up temporary files to save space
+    # find /tmp -name "carla*" -mtime +1 -delete 2>/dev/null
 done
-exit
+
+echo "========================================="
+echo "Optimization completed with $TOTAL_ITERS iterations"
+echo "========================================="
+exit 0

@@ -95,6 +95,7 @@ def waypoint_last_15_check(waypoint,waylist):
 # Param:
 #   ga_instance - an instance of the genetic algorithm
 #   solution - 6 PID values, 1 safety buffer value, and 1 static speed_adherance value in a list
+#   solution_idx - id of the solution set in the population
 # Return:
 #   fitness1 - 1/MSE of trajectory error
 #   fitness2 - 1/MSE of velocity error
@@ -1154,11 +1155,13 @@ def on_generation(ga_instance):
     print("GENERATION COMPLETED!")
     savefilename = "participantGA/"+participant_id
     
-# Replace the existing main function in blip_pid.py
-
+# The main function (technically) of the python program
+# This is where all the genetic algorithm and PSO algorithm wrapping occurs
+# The real gimmick is that it's set up to run with an accompanying bash script
+# That automates the process and circumvents a memory leak in CARLA
 if __name__ == "__main__":
     # Create an argparser and grab the arguments
-    argparser = argparse.ArgumentParser(description='Multi-Objective Optimizer for Driver Behavior')
+    argparser = argparse.ArgumentParser(description='GA File Processor')
     argparser.add_argument(
             '-i', '--ID',
             metavar='I',
@@ -1168,7 +1171,7 @@ if __name__ == "__main__":
     argparser.add_argument(
             '-n', '--New',
             action='store_true',
-            help='pass a true if new optimization needs to be started')
+            help='pass a true if new GA needs to be started')
     args = argparser.parse_args()
     global participant_path
     global participant_filename
@@ -1179,10 +1182,6 @@ if __name__ == "__main__":
     participant_filename = os.path.basename(participant_path)
     participant_id = os.path.splitext(participant_filename)[0]
     track_data = traj_loader(participant_path)
-    
-    # Import the MultiObjectiveOptimizer
-    from mo_optimize import MultiObjectiveOptimizer as MO
-    
     try:
         if args.New:
             # Generate reference embeddings if needed
@@ -1194,97 +1193,57 @@ if __name__ == "__main__":
             
             # Grab initial values for the participant
             throttle_brake_gains, steering_gains, safety_buffer, speed_adhere = load_gains(args.ID)
-            # Setup for optimizer
+            # 5 gen, 40 pop
             numGener = 1
             numMat = 15
             initPop = np.random.rand(15,8)
-            # Round the speed adherence values to integers
             newC = initPop[:,-1] * 10
             rounded = np.round(newC)
             initPop[:,-1] = rounded 
-            # Set first solution to existing PID values
             initPop[0] = np.array([throttle_brake_gains.kp, throttle_brake_gains.ki, throttle_brake_gains.kd,
                        steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, speed_adhere])
-            
-            # Set gene space (bounds)
-            geneSpace = [{'low': 0, 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},
-                         {'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low': 0, 'high': 5},
-                         {'low': 0, 'high': 5},{'low': -15, 'high': 15}]
-            
-            # Create the optimizer instance
-            print("Creating new Multi-Objective Optimizer instance...")
-            optimizer = MO(
-                num_generations=numGener,
-                pop_size=15,
-                num_parents_mating=numMat,
-                initial_population=initPop,
-                fitness_func=fitness_func,
-                on_generation=on_generation,
-                gene_space=geneSpace,
-                mutation_num_genes=2
-            )
-            
-            # Run the optimization
-            print("Starting optimization run...")
-            optimizer.run()
-            
-            # Save optimizer state
-            print("\nSaving optimizer state...")
+            geneSpace = [{'low': 0, 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low': 0, 'high': 5},{'low': 0, 'high': 5},{'low': -15, 'high': 15},]
+            parenSel = "nsga2"
+            ga_instance = pg.GA(num_generations = numGener,
+                                initial_population=initPop,
+                                num_parents_mating=numMat,
+                                fitness_func=fitness_func,
+                                on_generation=on_generation,
+                                mutation_num_genes=2,
+                                mutation_type="random",
+                                mutation_by_replacement=True,
+                                random_mutation_min_val=-1.0,
+                                random_mutation_max_val=1.0,
+                                parent_selection_type = parenSel,
+                                gene_space = geneSpace,
+                                )
+            ga_instance.run()
+            print("\n\n\n\n\n\n\n\n\n\n I AM ABOUT TO SAVE\n\n\n\n\n\n\n\n\n\n")
             filename = "participantGA/"+args.ID
-            success = optimizer.save(filename)
-            print(f"Save status: {success}")
-            
-            # Get best solution
-            solution, solution_fitness, solution_idx = optimizer.best_solution(optimizer.last_generation_fitness)
-            lastFit = optimizer.last_generation_fitness
-            lastSol = optimizer.last_generation_parents
-            
-            # Save results
+            ga_instance.save(filename)
+            print("\n\n\n\n\n\n\n\n\n\n I HAVE LEFT THE ZONE \n\n\n\n\n\n\n\n\n\n")
+            solution, solution_fitness, solution_idx = ga_instance.best_solution(ga_instance.last_generation_fitness)
+            lastFit = ga_instance.last_generation_fitness
+            lastSol = ga_instance.last_generation_parents
+            # print("PARETO FRONTIER?: ", ga_instance.pareto_fronts)
+            # print(f"Parameters of the best solution : {solution}")
+            # print(f"Fitness value of the best solution = {solution_fitness}")
             writepath = "participantPIDS/"+args.ID+"GAPIDS.txt"
-            print("Updating JSON with optimization results...")
-            update_pids_json(args.ID, solution, lastFit, lastSol, optimizer.pareto_fronts)
-            
-            # Write to text file
-            with open(writepath, "a") as theFile:
+            update_pids_json(args.ID, solution, lastFit, lastSol,ga_instance.pareto_fronts) # Update the JSON file with the new gains
+            with open(writepath, "a") as theFile: # Writing to participantPIDS txt file
                 for PID in solution:
+                    print(type(PID))
                     theFile.write(str(PID) + " ")
                 theFile.write("\n")
-            print("Optimization completed successfully.")
+            print("\n\n\n\n\n FOR ALL LEGAL INTENTS, I HAVE SUPPOSEDLY RAN \n\n\n\n")
         else:
-            # Load existing optimizer state and continue
             loadname = "participantGA/" + args.ID
             try:
-                print(f"Attempting to load optimizer state from {loadname}...")
-                optimizer = MO.load(loadname)
-                optimizer.fitness_func = fitness_func
-                optimizer.on_generation = on_generation
-                
-                # Continue optimization
-                print("Continuing optimization run...")
-                optimizer.run()
-                
-                # Save updated state
-                filename = "participantGA/" + args.ID
-                success = optimizer.save(filename)
-                print(f"Save status: {success}")
-                
-                # Get best solution
-                solution, solution_fitness, solution_idx = optimizer.best_solution(optimizer.last_generation_fitness)
-                lastFit = optimizer.last_generation_fitness
-                lastSol = optimizer.last_generation_parents
-                
-                # Update results
-                update_pids_json(args.ID, solution, lastFit, lastSol, optimizer.pareto_fronts)
-                with open("participantPIDS/" + args.ID + "GAPIDS.txt", "a") as theFile:
-                    for PID in solution:
-                        theFile.write(str(PID) + " ")
-                    theFile.write("\n")
-                print("Optimization iteration completed successfully.")
+                load_instance = pg.load(loadname)
+                load_instance.fitness_func = fitness_func
+                load_instance.run()
             except FileNotFoundError:
-                print(f"No existing optimizer state found at {loadname}.")
-                print("Creating new optimizer instance instead...")
-                
-                # Code for creating new optimizer (same as in the args.New branch)
+                print(f"File {loadname} not found. Creating a new GA instance.")
                 # Generate reference embeddings if needed
                 clean_id = args.ID.replace('final', '')
                 reference_embeddings_path = f"{embedding_save_path}/reference_{clean_id}_blip_embeddings.pkl"
@@ -1294,8 +1253,7 @@ if __name__ == "__main__":
                 
                 # Grab initial values for the participant
                 throttle_brake_gains, steering_gains, safety_buffer, speed_adhere = load_gains(args.ID)
-                
-                # Setup for optimization
+                # 5 gen, 40 pop
                 numGener = 1
                 numMat = 15
                 initPop = np.random.rand(15,8)
@@ -1304,46 +1262,45 @@ if __name__ == "__main__":
                 initPop[:,-1] = rounded 
                 initPop[0] = np.array([throttle_brake_gains.kp, throttle_brake_gains.ki, throttle_brake_gains.kd,
                            steering_gains.kp, steering_gains.ki, steering_gains.kd, safety_buffer, speed_adhere])
-                
-                geneSpace = [{'low': 0, 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},
-                             {'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low': 0, 'high': 5},
-                             {'low': 0, 'high': 5},{'low': -15, 'high': 15}]
-                
-                # Create and run the optimizer
-                optimizer = MO(
-                    num_generations=numGener,
-                    pop_size=15,
-                    num_parents_mating=numMat,
-                    initial_population=initPop,
-                    fitness_func=fitness_func,
-                    on_generation=on_generation,
-                    gene_space=geneSpace,
-                    mutation_num_genes=2
-                )
-                
-                optimizer.run()
-                
-                # Save state
+                geneSpace = [{'low': 0, 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low':0 , 'high': 5},{'low': 0, 'high': 5},{'low': 0, 'high': 5},{'low': -15, 'high': 15},]
+                parenSel = "nsga2"
+                ga_instance = pg.GA(num_generations = numGener,
+                                    initial_population=initPop,
+                                    num_parents_mating=numMat,
+                                    fitness_func=fitness_func,
+                                    on_generation=on_generation,
+                                    mutation_num_genes=2,
+                                    mutation_type="random",
+                                    mutation_by_replacement=True,
+                                    random_mutation_min_val=-1.0,
+                                    random_mutation_max_val=1.0,
+                                    parent_selection_type = parenSel,
+                                    gene_space = geneSpace,
+                                    )
+                ga_instance.run()
+                solution, solution_fitness, solution_idx = ga_instance.best_solution(ga_instance.last_generation_fitness)
+                lastFit = ga_instance.last_generation_fitness
+                lastSol = ga_instance.last_generation_parents
                 filename = "participantGA/" + args.ID
-                optimizer.save(filename)
-                
-                # Get and save best solution
-                solution, solution_fitness, solution_idx = optimizer.best_solution(optimizer.last_generation_fitness)
-                lastFit = optimizer.last_generation_fitness
-                lastSol = optimizer.last_generation_parents
-                update_pids_json(args.ID, solution, lastFit, lastSol, optimizer.pareto_fronts)
-                
+                ga_instance.save(filename)
+                update_pids_json(args.ID, solution, lastFit, lastSol, ga_instance.pareto_fronts)
                 with open("participantPIDS/" + args.ID + "GAPIDS.txt", "a") as theFile:
                     for PID in solution:
                         theFile.write(str(PID) + " ")
                     theFile.write("\n")
-                print("New optimization run completed successfully.")
+            else:
+                solution, solution_fitness, solution_idx = load_instance.best_solution(load_instance.last_generation_fitness)
+                filename = "participantGA/" + args.ID
+                load_instance.save(filename)
+                lastFit = load_instance.last_generation_fitness
+                lastSol = load_instance.last_generation_parents
+                update_pids_json(args.ID, solution, lastFit, lastSol, load_instance.pareto_fronts)
+                with open("participantPIDS/" + args.ID + "GAPIDS.txt", "a") as theFile:
+                    for PID in solution:
+                        theFile.write(str(PID) + " ")
+                    theFile.write("\n")
     except KeyboardInterrupt:
-        print("\nOptimization interrupted by user.")
-    except Exception as e:
-        print(f"Error during optimization: {e}")
-        import traceback
-        traceback.print_exc()
+        pass
     finally:
         # Cleanup
         capture_frames = False
@@ -1353,4 +1310,4 @@ if __name__ == "__main__":
             except:
                 pass
         actor_list.clear()
-        print('\nCleanup completed.')
+        print('\ndone.')
