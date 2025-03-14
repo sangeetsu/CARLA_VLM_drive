@@ -278,7 +278,9 @@ def run_simulator(PIDInput):
 
     snap = world.get_snapshot()
     # Grab the velocity adherance value
-    velAdh = PIDInput[7]
+    # Set velAdh to 0 to simulate no adjustment for sanity
+    #velAdh = PIDInput[7]
+    velAdh = 0
     # initial waypoint grab. Functionally just initializes a variable.  
     waypoint = get_next_waypoint(world, vehicle, my_custom_waypoints, PIDInput[6])
     while counter < 480:
@@ -1320,9 +1322,9 @@ if __name__ == "__main__":
                 throttle_brake_gains, steering_gains, safety_buffer, speed_adhere = load_gains(args.ID)
                 
                 # Setup for optimization
-                numGener = 1
-                numMat = 15
-                initPop = np.random.rand(15,8)
+                numGener = 5
+                numMat = 40
+                initPop = np.random.rand(40,8)
                 newC = initPop[:,-1] * 10
                 rounded = np.round(newC)
                 initPop[:,-1] = rounded 
