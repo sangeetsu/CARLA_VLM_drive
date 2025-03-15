@@ -2,7 +2,7 @@
 # Script to run multi-objective optimization with improved resource management
 
 # Run first instance without an argument
-file_path="participant_data/AR4924final.csv"
+file_path="participant_data/AM5287final.csv"
 # Extract filename from the file path
 filename=$(basename "$file_path")
 # Retrieve ID
