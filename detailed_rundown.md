@@ -47,6 +47,7 @@ The final fitness combines these with weighting:
 visualWeight = 0.3
 trajWeight = 0.7
 finalFit = (1/trajE) * (trajWeight + visualWeight * blip_similarity)
+finalFit2 = 1/velE
 ```
 
 ## The Optimization Process Flow
