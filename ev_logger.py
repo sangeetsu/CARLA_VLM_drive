@@ -202,11 +202,20 @@ def run_carla_instance(PIDInput, optimizer, ID):
 
 
             waypoint_location = waypoint.transform.location
-            closest_idx = np.argmin(np.sum((base_traj_data[['x', 'y']].values - np.array([waypoint_location.x, waypoint_location.y]))**2, axis=1))
-            closest_data = base_traj_data.iloc[closest_idx]
-            target_velocity = closest_data['speed_limit']
-            print("Scheduled Velocity: ", target_velocity)
-            adhere = 0
+            
+            # ORIGINAL CODE: Pull target velocity from baseline trajectory
+            # closest_idx = np.argmin(np.sum((base_traj_data[['x', 'y']].values - np.array([waypoint_location.x, waypoint_location.y]))**2, axis=1))
+            # closest_data = base_traj_data.iloc[closest_idx]
+            # target_velocity = closest_data['speed_limit']
+            
+            # NEW CODE: Find closest point in participant trajectory and use their velocity
+            closest_idx_participant = np.argmin(np.sum((track_data[['x', 'y']].values - np.array([waypoint_location.x, waypoint_location.y]))**2, axis=1))
+            closest_data_participant = track_data.iloc[closest_idx_participant]
+            target_velocity = closest_data_participant['vel_mps']  # Use participant velocity in m/s
+            
+            print("Participant Velocity Target: ", target_velocity)
+            adhere = -20
+
             # if CurrentZone > -1:
             #     adhere = VelZones[CurrentZone]
             # adhere = target_velocity + adhere
@@ -236,9 +245,9 @@ def run_carla_instance(PIDInput, optimizer, ID):
             # END TESTING ZONE
             #print("Final Target: ", target_velocity)
             if optimizer == "GA":
-                target_heading = GA_PID.calculate_heading(closest_idx, track_data, waypoint.transform.location)
-            else:
-                target_heading = PSO_PID.calculate_heading(closest_idx, track_data, waypoint.transform.location)
+                target_heading = GA_PID.calculate_heading(closest_idx_participant, track_data, waypoint.transform.location)
+            # else:
+            #     target_heading = PSO_PID.calculate_heading(closest_idx, track_data, waypoint.transform.location)
             
             # Check if the vehicle has crossed the target position
             vehicle_transform = vehicle.get_transform()

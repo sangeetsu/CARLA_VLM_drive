@@ -50,7 +50,7 @@ def calculate_r_squared_nearest_with_zones(participant_id, simulation_csv_path, 
     
     human_df['velocity_ms'] = calculate_velocity(human_df)
     human_df['velocity_ms'] = smooth_velocity(human_df['velocity_ms'])
-    sim_velocities = np.sqrt(sim_df['VelX']**2 + sim_df['VelY']**2)
+    sim_velocities = np.sqrt(sim_df['VelX']**2 + sim_df['VelY']**2)##############
     human_positions = human_df[['x', 'y']].values
     human_tree = cKDTree(human_positions)
     sim_positions = sim_df[['PosX', 'PosY']].values
